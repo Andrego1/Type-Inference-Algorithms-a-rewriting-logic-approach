@@ -1,7 +1,45 @@
 fmod LAMBDA-CALCULUS is
+    --- modules importados
+    protecting NAT .
+    protecting STRING .
+    --- protecting QID-LIST .
 
-    --- op lambda _ : ? -> ? .
-    --- op app _ _ : ? ? -> ? .
-    
+    ---- sorts
+    sorts Var Term .
+    subsort Var < Term . 
+
+***(
+    isto permite que 
+    red lambda(app(x(1), x(2)), x(1)) . 
+    result com [Term]
+    mas não devia ser possivel
+    a não ser que esteja bem assim...
+    pois [Term] é um kind
+)
+
+    op x(_) : NzNat -> Var . --- varáveis, ex: x(1), x(2), ...
+    ---op _ : String -> Var . --- var em string
+    op lambda : Var Term -> Term . --- abstração
+    op app : Term Term -> Term .  --- aplicação
+ 
+
+    --- acima acho que está bem feito
+
+
+    op sub : Term Var Term -> Term .
+    --- tem forma sub(M, X, N) = M[N/X]
+    op r _ : Term -> Term .
+
+    vars T1 T2 T3 : Term .
+    var X1 X2 : Var .
+
+    eq sub(X1, X1, T1) = T1 .
+    ceq sub(X1, X2, T1) = X1 if X1 =/= X2 . --- ceq necessario?
+    eq sub(app(T1, T2), X1, T3) = app(sub(T1, X1, T3), sub(T2, X1, T3)) .
+    ceq sub(lambda(X1, T1), X2, T3) = lambda(X1, T1) if X1 == X2 . --- ceq necessario?
+    ceq sub(lambda(X1, T1), X2, T3) = lambda(X1, sub(T1, X2, T3)) if X1 =/= X2 .
+
+    --- estava a tentar fazer redução aqui, faço com rl ou eq?
+    eq r app(lambda(X1, T1), T2) = sub(T1, X1, T2) .   
 
 endfm
