@@ -1,0 +1,53 @@
+fmod NUMBERS is
+    protecting BOOL .
+
+    sort Zero .
+    sorts Nat NzNat .
+    subsort Zero NzNat < Nat .
+    op zero : -> Zero [ctor] .
+    op s_ : Nat -> NzNat [ctor] .
+    op sd : Nat Nat -> Nat .
+    ops _+_ _*_ : Nat Nat -> Nat [assoc comm] .
+    op _+_ : NzNat Nat -> NzNat [ditto] .
+    op _*_ : NzNat NzNat -> NzNat [ditto] .
+    op p : NzNat -> Nat .
+
+    vars I N M : Nat .
+    eq N + zero = N .
+    eq N + s M = s (N + M) .
+    eq sd(N, N) = zero .
+    eq sd(N, zero) = N .
+    eq sd(zero, N) = N .
+    eq sd(s N, s M) = sd(N, M) .
+    eq N * zero = zero .
+    eq N * s M = (N * M) + N .
+    eq p(s N) = N [label partial-predecessor] .
+
+    eq (N + M) * I = (N * I) + (M * I)
+        [nonexec metadata "distributive law"] .
+
+    sort Nat3 .
+    ops 0 1 2 : -> Nat3 [ctor] .
+    op _+_ : Nat3 Nat3 -> Nat3 [comm] .
+    vars N3 : Nat3 .
+    eq N3 + 0 = N3 .
+    eq 1 + 1 = 2 .
+    eq 1 + 2 = 0 .
+    eq 2 + 2 = 1 .
+
+    sort NatSeq .
+    subsort Nat < NatSeq .
+    op nil : -> NatSeq .
+    op __ : NatSeq NatSeq -> NatSeq [assoc id: nil] .
+
+    sort NatSet .
+    subsort Nat < NatSet .
+    op empty : -> NatSet .
+    op _;_ : NatSet NatSet -> NatSet [assoc comm id: empty] .
+    eq N ; N = N [label natset-idem] .
+    
+    op _in_ : Nat NatSet -> Bool .
+    var NS : NatSet .
+    eq N in N ; NS = true .
+    eq N in NS = false [owise] .
+endfm

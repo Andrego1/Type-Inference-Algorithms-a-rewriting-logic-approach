@@ -1,0 +1,101 @@
+fmod NUMBERS is
+    sort Zero .
+    sort Nat .
+    sort NzNat .
+    --- pode ser sorts Zero Nat NzNat .
+    subsorts Zero < Nat .
+    subsorts NzNat < Nat . --- sem isto não funcionava, parse dava erro
+
+    op zero : -> Zero .
+    op s_ : Nat -> NzNat .
+    op sd : Nat Nat -> Nat . --- symetric diference |x-y| sempre >= 0
+    ops _+_ _*_ : Nat Nat -> Nat .
+
+    sort NatSeq .
+    subsorts Nat < NatSeq .
+    op __ : NatSeq NatSeq -> NatSeq [assoc] .
+
+
+-----------------
+    op p : NzNat -> Nat .
+
+    sorts Node Edge .
+    ops source target : Edge -> Node .
+    sort Path .
+    subsorts Edge < Path .
+    op _;_ : [Path] [Path] -> [Path] .
+
+-----------------
+
+    op _+_ : NzNat Nat -> NzNat .
+    sort Nat3 .
+    ops 0 1 2 : -> Nat3 .
+    op _+_ : Nat3 Nat3 -> Nat3 .
+
+------------------
+
+    var N : Nat .
+    var M : Nat .
+    vars X Y : [Nat] .
+
+------------------
+
+    eq N + zero = N .
+    eq N + s M = s (N + M) .
+    eq sd(N,M) = zero .
+    eq sd(N,zero) = N .
+    eq sd(zero, N) = N .
+    eq sd(s N, s M) = sd(N, M) .
+
+-------------------
+
+    var E : Edge .
+    vars P Q R S T : Path .
+    cmb E ; P : Path if target(E) = source(P) .
+    ceq (P ; Q) ; R = P ; (Q ; R) if target(P) = source(Q) /\ target(Q) = source(R) .
+
+    ceq source(P) = source(E) if E ; S := P .
+    ceq target(P) = target(E) if E ; S := P .
+
+-------------------
+
+    vars NS NS0 NS1 : NatSeq .
+    op _occurs-inner_ : [Nat] [NatSeq] -> [Bool] .
+    ceq N:Nat occurs-inner NS:NatSeq = true if (NSO:NatSeq N:Nat NS1:NatSeq) := NS:NatSeq .
+    ---- ou eq N:Nat occurs-inner NS0:NatSeq N:Nat NS1:NatSeq = true .
+
+    ---- não vai funcionar bem!
+    op hasTwo : [NatSeq] -> [Bool] .
+    ceq hasTwo(NS:NatSeq) = N:Nat == s s zero
+        if NS0:NatSeq N:Nat NS1:NatSeq := NS:NatSeq .
+
+-------------------
+
+    sort Foo .
+    op f : Foo -> Foo [iter] .
+
+--------------------
+
+    sorts NzNeg Int .
+    subsorts Nat NzNeg < Int .
+    op -_ : NzNat -> NzNeg [ctor] .
+    op -_ : Int -> Int .
+    op s_ : Int -> Int .
+
+    var N2 : Nat .
+
+    eq - zero = zero .
+    eq - (- (s N2)) = s N2 .
+    eq s (- (s N2)) = - N2 .
+
+
+---------------------
+
+    sort NatSet .
+    subsort Nat < NatSet .
+    op empty : -> NatSet [ctor] .
+    op _;_ : NatSet NatSet -> NatSet [ctor assoc comm id: empty]
+    eq N ; N = N --- para ser indopotente, não podemos ter idem juntamente com assoc e comm
+    
+
+endfm

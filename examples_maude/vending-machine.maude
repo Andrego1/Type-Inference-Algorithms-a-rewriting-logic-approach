@@ -1,0 +1,10 @@
+fmod VENDING-MACHINE-SIGNATURE is
+    sorts Coin Item Marking .
+    subsorts Coin Item < Marking .
+    op __ : Marking Marking -> Marking [assoc comm id: null] . ---- (a experiemnta sem comm, ordem importa e não ficam juntos)
+    op null : -> Marking .
+    op $ : -> Coin [format (r! o)] .
+    op q : -> Coin [format (r! o)] .
+    op a : -> Item [format (b! o)] .
+    op c : -> Item [format (b! o)] .
+endfm

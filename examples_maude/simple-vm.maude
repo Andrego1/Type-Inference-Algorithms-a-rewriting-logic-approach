@@ -1,0 +1,7 @@
+mod SIMPLE-VENDING-MACHINE is
+    including VENDING-MACHINE-SIGNATURE .
+    rl [buy-c] : $ => c .
+    rl [buy-a] : $ => a q .
+    rl [change] : q q q q => $ .
+endm
+

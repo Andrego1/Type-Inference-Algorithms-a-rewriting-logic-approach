@@ -1,0 +1,11 @@
+mod VENDING-MACHINE is
+    including VENDING-MACHINE-SIGNATURE .
+    var M : Marking .
+    rl [add-q] : M => M q .
+    rl [add-$] : M => M $ .
+    rl [buy-c] : $ => c .
+    rl [buy-a] : $ => a q .
+    ---rl [buy-c] : $ M => c M .
+    ---rl [buy-a] : $ M => a q M .
+    rl [change] : q q q q => $ .
+endm

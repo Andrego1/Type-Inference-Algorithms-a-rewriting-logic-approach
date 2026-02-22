@@ -1,0 +1,8 @@
+fmod XMATHC-TEST is 
+    sort Elt .
+    ops a b c d e : -> Elt .
+    op _._ : Elt Elt -> Elt [assoc] .
+    op _+_ : Elt Elt -> Elt [assoc comm] .
+    vars X Y Z : Elt .
+    eq X . (Y + Z) = (X . Y) + (X . Z) [metadata "distributivity"] .
+endfm

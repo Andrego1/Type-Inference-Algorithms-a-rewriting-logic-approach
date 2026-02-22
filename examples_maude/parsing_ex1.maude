@@ -1,0 +1,5 @@
+fmod PARSING-EX1 is
+    sort Nat .
+    ops 1 2 3 : -> Nat .
+    ops _+_ _*_ : Nat Nat -> Nat .
+endfm 

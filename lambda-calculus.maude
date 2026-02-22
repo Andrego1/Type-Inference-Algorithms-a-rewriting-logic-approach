@@ -1,0 +1,7 @@
+fmod LAMBDA-CALCULUS is
+
+    --- op lambda _ : ? -> ? .
+    --- op app _ _ : ? ? -> ? .
+
+
+endfm

@@ -1,0 +1,37 @@
+fmod SIMPLE-NAT is
+    sort Nat .
+    op zero : -> Nat .
+    op s_ : Nat -> Nat .
+    op _+_ : Nat Nat -> Nat .
+    vars N M : Nat .
+    eq zero + N = N .
+    eq s N + M = s (N + M) .
+endfm
+
+*** comment
+--- also comment
+
+***(
+multi
+line
+comment
+)
+
+---(
+also
+multi
+line
+comment
+)
+
+***(
+'load' and 'in' load files
+'red' and 'reduce' do the same 
+
+example:
+reduce in SIMPLE-NAT : s s zero + s s zero .
+
+not necessary to reernce it again, uses last
+reduce s s zero + s zero
+
+)

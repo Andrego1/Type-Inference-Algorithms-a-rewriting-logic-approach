@@ -1,0 +1,6 @@
+fmod HET-LIST is
+    protecting CONVERSION .
+    sort List .
+    op nil : -> List .
+    op __ : Universal List -> List [ctor poly (1)] .
+endfm

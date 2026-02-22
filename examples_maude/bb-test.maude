@@ -1,0 +1,9 @@
+mod BB-TEST is 
+    sort Expression .
+    ops a b bingo : -> Expression .
+    op f : Expression Expression -> Expression .
+
+    rl a => b .
+    rl b => a .
+    rl f(b,b) => bingo .
+endm
