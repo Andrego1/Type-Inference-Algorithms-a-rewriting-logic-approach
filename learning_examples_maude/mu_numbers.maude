@@ -94,8 +94,8 @@ fmod NUMBERS is
     sort NatSet .
     subsort Nat < NatSet .
     op empty : -> NatSet [ctor] .
-    op _;_ : NatSet NatSet -> NatSet [ctor assoc comm id: empty]
-    eq N ; N = N --- para ser indopotente, não podemos ter idem juntamente com assoc e comm
+    op _;_ : NatSet NatSet -> NatSet [ctor assoc comm id: empty] .
+    eq N ; N = N . --- para ser indopotente, não podemos ter idem juntamente com assoc e comm
     
 
 endfm

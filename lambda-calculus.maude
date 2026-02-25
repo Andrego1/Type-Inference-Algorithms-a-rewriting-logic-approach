@@ -2,7 +2,6 @@ fmod LAMBDA-CALCULUS is
     --- modules importados
     protecting NAT .
     protecting STRING .
-    --- protecting QID-LIST .
 
     ---- sorts
     sorts Var Term .
@@ -16,30 +15,61 @@ fmod LAMBDA-CALCULUS is
     a não ser que esteja bem assim...
     pois [Term] é um kind
 )
+    subsort String < Var . --- para usar srings como variáveis
 
-    op x(_) : NzNat -> Var . --- varáveis, ex: x(1), x(2), ...
-    ---op _ : String -> Var . --- var em string
-    op lambda : Var Term -> Term . --- abstração
-    op app : Term Term -> Term .  --- aplicação
- 
+    --- não precisso de usar vars assim, agora
+    op x(_) : NzNat -> Var . --- varáveis, ex: x(1), x(2), ... 
 
-    --- acima acho que está bem feito
+    op lambda : Var Term -> Term [format (r! o)] . --- abstração
+    op app : Term Term -> Term [format (g! o)] .  --- aplicação
 
+---(
+    exemplos:
+    (lx.x) = lambda("x", "x") ou lambda(x(1), x(1))
+    (lxy.x) = lambda("x", lambda("y", "x")) ou com "x" = x(1) e "y" = x(2)
+    (lx.xx)(lx.xx) = app(lambda("x", app("x", "x")), lambda("x", app("x", "x"))) 
+    (lx.(ly.y)(lz.z)) = lambda("x", app(lambda("y","y"), lambda("z","z")))
+    ((lxy.xyx)(lxy.x))(lxy.y) = app(app(lambda("x",lambda("y", app(app("x", "y"), "x"))), lambda("x", lambda("y", "x"))), lambda("x", lambda("y", "y")))
+
+
+    app(app(lambda("x",lambda("y", app(app("x", "y"), "x"))), lambda("x", lambda("y", "x"))), lambda("x", lambda("y", "y")))
+    app(lambda("x",lambda("y", app(app("x", "y"), "x"))), lambda("x", lambda("y", "x")))
+    
+)   
 
     op sub : Term Var Term -> Term .
-    --- tem forma sub(M, X, N) = M[N/X]
+    --- funciona como sub(M, X, N) = M[N/X]
     op r _ : Term -> Term .
 
     vars T1 T2 T3 : Term .
     var X1 X2 : Var .
 
+    --- estas eq são para substituição
+    --- atenção que estou a assumir que não existe problema com captura de variáveis 
     eq sub(X1, X1, T1) = T1 .
     ceq sub(X1, X2, T1) = X1 if X1 =/= X2 . --- ceq necessario?
     eq sub(app(T1, T2), X1, T3) = app(sub(T1, X1, T3), sub(T2, X1, T3)) .
-    ceq sub(lambda(X1, T1), X2, T3) = lambda(X1, T1) if X1 == X2 . --- ceq necessario?
-    ceq sub(lambda(X1, T1), X2, T3) = lambda(X1, sub(T1, X2, T3)) if X1 =/= X2 .
+    ceq sub(lambda(X1, T1), X2, T2) = lambda(X1, T1) if X1 == X2 . --- ceq necessario?
+    ceq sub(lambda(X1, T1), X2, T2) = lambda(X1, sub(T1, X2, T2)) if X1 =/= X2 .
 
     --- estava a tentar fazer redução aqui, faço com rl ou eq?
-    eq r app(lambda(X1, T1), T2) = sub(T1, X1, T2) .   
+    --- ainda não está bem
 
+    --- ordem normal
+    eq r X1 = X1 .
+    eq r lambda(X1, T1) = lambda(X1, r T1) . 
+    eq r app(lambda(X1, T1), T2) = sub(T1, X1, T2) . 
+    ---eq r app(app(T1, T2), T3) = app(r app(T1, T2), T3) .
+    eq r app(T1, T2) = if T1 =/= r T1 then r app(r T1, T2) else app(T1, r T2) fi .
+    
+
+--------------------------------------------------------------
+
+    --- Novas forma de escrever
+    --- Tenho de resolver a ambiguidade!
+
+    op lambda2 _ _ : Var Term -> Term [format (r! o o o)] . 
+    op app2 _ _ : Term Term -> Term [format (g! o o o)] . 
+
+    op _._ : Term Term -> Term [format (o g! o o)] .
 endfm
