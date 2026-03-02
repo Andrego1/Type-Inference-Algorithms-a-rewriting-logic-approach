@@ -14,8 +14,10 @@ fmod LAMBDA-CALCULUS is
     mas não devia ser possivel
     a não ser que esteja bem assim...
     pois [Term] é um kind
+
+    ex: lambda app "x" "x" "x" (é [Term])
 )
-    subsort String < Var . --- para usar srings como variáveis
+    subsort String < Var . --- para usar srings como variáveis ex: "x" ou até "yy"
 
     --- não precisso de usar vars assim, agora
     op x(_) : NzNat -> Var . --- varáveis, ex: x(1), x(2), ... 
@@ -37,6 +39,10 @@ fmod LAMBDA-CALCULUS is
     
 )   
 
+
+----------------------------------------------
+--- Para ser honesto, não me lembro se era para fazer isto, mas se não for serve como treino
+
     op sub : Term Var Term -> Term .
     --- funciona como sub(M, X, N) = M[N/X]
     op r _ : Term -> Term .
@@ -45,6 +51,7 @@ fmod LAMBDA-CALCULUS is
     var X1 X2 : Var .
 
     --- estas eq são para substituição
+    --- parece-me que está bem
     --- atenção que estou a assumir que não existe problema com captura de variáveis 
     eq sub(X1, X1, T1) = T1 .
     ceq sub(X1, X2, T1) = X1 if X1 =/= X2 . --- ceq necessario?
@@ -55,21 +62,42 @@ fmod LAMBDA-CALCULUS is
     --- estava a tentar fazer redução aqui, faço com rl ou eq?
     --- ainda não está bem
 
-    --- ordem normal
+    --- ordem normal: reduzir o b-redex mais à esquerda e mais exterior
     eq r X1 = X1 .
     eq r lambda(X1, T1) = lambda(X1, r T1) . 
     eq r app(lambda(X1, T1), T2) = sub(T1, X1, T2) . 
-    ---eq r app(app(T1, T2), T3) = app(r app(T1, T2), T3) .
     eq r app(T1, T2) = if T1 =/= r T1 then r app(r T1, T2) else app(T1, r T2) fi .
     
+    --- com o último exemplo ainda não está bem
+    --- eu acho que a última regra não combina com um eventual r sub(...) da anterior
 
 --------------------------------------------------------------
 
     --- Novas forma de escrever
     --- Tenho de resolver a ambiguidade!
+    --- não me lembro dos exemplos que fiz que davam ambiguidade xD
+    --- não tenho eq para eles, os defenidos anteriormente estão defenidos para a maneira anterior
 
-    op lambda2 _ _ : Var Term -> Term [format (r! o o o)] . 
-    op app2 _ _ : Term Term -> Term [format (g! o o o)] . 
+    --- na verdade acho que não preciso de ter como app2, posso ter app, overloading, tem formato diferente apenas
+    op lambda _ _ : Var Term -> Term [format (r! o o o)] . 
+    op app _ _ : Term Term -> Term [format (g! o o o)] . 
 
-    op _._ : Term Term -> Term [format (o g! o o)] .
+    --- acho que nao vou usar assim
+    ---op _._ : Term Term -> Term [format (o g! o o)] .
+
+
+
+-----------------------------------------------------------------
+    --- types
+    --- work in progress
+
+    sorts Type TypeVar .
+    subsorts TypeVar < Type .
+    subsorts String < TypeVar .
+
+    --- precisa de ser right associative, acho que está bem
+    op _ ->' _ : Type Type -> Type [gather (E e)] .
+
+    --- precisso de ver o unify built-in do maude 
+
 endfm
