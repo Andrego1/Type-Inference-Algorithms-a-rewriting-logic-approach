@@ -1,0 +1,18 @@
+mod BETA is
+    including LAMBDA-CALCULUS .   
+
+    vars T1 T2 T3 : Term .
+    var X1 X2 : Var .
+
+    --- INCOMPLETO!
+    --- rule for first format
+    rl [beta1] : app(lambda(X1, T1), T2) => sub(T1, X1, T2) .
+    crl [beta2] : lambda(X1, T1) => lambda(X1, T2)
+        if T1 => T2 /\ T1 =/= T2 .
+
+    --- rule for second format
+    rl [beta1] : app lambda X1 T1 T2 => sub(T1, X1, T2) .
+    crl [beta2] : lambda X1 T1 => lambda X1 T2
+        if T1 => T2 /\ T1 =/= T2 .
+
+endm
