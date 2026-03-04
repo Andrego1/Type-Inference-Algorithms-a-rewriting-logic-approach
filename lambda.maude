@@ -1,4 +1,4 @@
-fmod LAMBDA-CALCULUS is
+fmod LAMBDA is
     --- modules importados
     protecting NAT .
     protecting STRING .
@@ -16,7 +16,7 @@ fmod LAMBDA-CALCULUS is
     op app : Term Term -> Term [format (g! o)] .  --- aplicação
 
 ---(
-    exemplos ANTIGO:
+    exemplos:
     (lx.x) = lambda("x", "x") ou lambda(x(1), x(1))
     (lxy.x) = lambda("x", lambda("y", "x")) ou com "x" = x(1) e "y" = x(2)
     (lx.xx)(lx.xx) = app(lambda("x", app("x", "x")), lambda("x", app("x", "x"))) 
@@ -73,12 +73,12 @@ fmod LAMBDA-CALCULUS is
     --- na verdade acho que não preciso de ter como app2, posso ter app, overloading, tem formato diferente apenas
     op lambda _ _ : Var Term -> Term [format (r! o o o)] . 
     op app _ _ : Term Term -> Term [format (g! o o o)] . 
-    --- talvez elemine um e apenas fica uma das maneiras, mas posso fazer como entender
+    --- talvez elemine um e apenas fica uma das maneiras
     ---op _ app _ : Term Term -> Term [gather (e E) format (o g! o o)] . 
-    --- Tenho de resolver a ambiguidade!
+    --- tinha de resolver a ambiguidade!
     
 ---(
-    exemplos NOVO:
+    exemplos:
     (lx.x) = lambda "x" "x"
     (lxy.x) = lambda "x" lambda "y" "x"
     (lx.xx)(lx.xx) = app lambda "x" app "x" "x" lambda "x" app "x" "x"
@@ -95,10 +95,12 @@ fmod LAMBDA-CALCULUS is
     subsorts TypeVar < Type . 
     subsorts String < TypeVar . 
 
-    --- precisa de ser right associative, acho que está bem
-    op _ ->' _ : Type Type -> Type [gather (e E) format(o b o o)] .
+    op t(_) : NzNat -> TypeVar . --- type
 
-    --- precisso de ver o unify built-in do maude 
+    --- precisa de ser right associative, acho que está bem
+    op _ ->' _ : Type Type -> Type [gather (e E) format(o y o o)] .
+
+    --- precisso de ver o unify do maude 
 
 ---(
     A unificação que está defenida nos capitulos do livro
@@ -108,12 +110,39 @@ fmod LAMBDA-CALCULUS is
     seria muitas mais coisas a ver
 )
 
-    sort Context . 
-    op nil : -> Context . 
-    op _,_:_ : Context Var Type -> Context . 
+    sort Env . --- o gamma (ambiente/contexto)
+    op nil : -> Env . 
+    op _,_:_ : Env Var Type -> Env . 
 
-    ---op _|-_:_ : Context Term Type -> ?? . 
+    ---op _|-_:_ : Env Term Type -> ?? . 
 
+    sort PPair .
+    op p : Env Type -> PPair .
+    --- milner's type-inference
+    op inference : Term PPair -> PPair . 
+
+    vars TYPE1 TYPE2 TYPE3 : Type .
+    vars V1 V2 V3 : TypeVar . --- por acaso os typevar e var são a mesma coisa, não?
+    var P : PPair .
+
+    op tsub : Type Type TypeVar -> Type .
+    --- tsub(o,t,p) -> o[t/p]
+
+    eq tsub(V1, TYPE1, V1) = TYPE1 .
+    ceq tsub(V2, TYPE1, V1) = V2
+        if V2 =/= V1 .
+    eq tsub((TYPE2 ->' TYPE3), TYPE1, V1) = tsub(TYPE2, TYPE1, V1) ->' tsub(TYPE3, TYPE1, V1) .
+
+---(
+exemplos:
+tsub("t1" ->' "t3", "t2" ->' "t1", "t3") = "t1" ->' "t2" ->' "t1"
+tsub("t1" ->' "t2" ->' "t1", "t3" ->' "t4", "t1") = ("t3" ->' "t4") ->' "t2" ->' "t3" ->' "t4"
+tsub("t1" ->' "t2" ->' "t1", "t3" ->' "t4", "t2") = "t1" ->' ("t3" ->' "t4") ->' "t1"
+)
+
+    ---var C : NzNat .
+
+    ---eq inference(X1, P, C) = p(P,X1:"x"+) .
     
 
 endfm
