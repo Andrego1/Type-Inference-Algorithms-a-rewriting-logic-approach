@@ -2,6 +2,7 @@ fmod LAMBDA is
     --- modules importados
     protecting NAT .
     protecting STRING .
+    protecting BOOL .
 
     ---- sorts
     sorts Var Term .
@@ -12,8 +13,8 @@ fmod LAMBDA is
     --- não precisso de usar vars assim, agora
     op x(_) : NzNat -> Var . --- varáveis, ex: x(1), x(2), ... 
 
-    op lambda : Var Term -> Term [format (r! o)] . --- abstração
-    op app : Term Term -> Term [format (g! o)] .  --- aplicação
+    op lambda : Var Term -> Term [format (b! o)] . --- abstração
+    op app : Term Term -> Term [format (c! o)] .  --- aplicação
 
 ---(
     exemplos:
@@ -71,8 +72,8 @@ fmod LAMBDA is
     --- Novas forma de escrever
 
     --- na verdade acho que não preciso de ter como app2, posso ter app, overloading, tem formato diferente apenas
-    op lambda _ _ : Var Term -> Term [format (r! o o o)] . 
-    op app _ _ : Term Term -> Term [format (g! o o o)] . 
+    op lambda _ _ : Var Term -> Term [format (b! o o o)] . 
+    op app _ _ : Term Term -> Term [format (c! o o o)] . 
     --- talvez elemine um e apenas fica uma das maneiras
     ---op _ app _ : Term Term -> Term [gather (e E) format (o g! o o)] . 
     --- tinha de resolver a ambiguidade!
@@ -98,28 +99,31 @@ fmod LAMBDA is
     op t(_) : NzNat -> TypeVar . --- type
 
     --- precisa de ser right associative, acho que está bem
-    op _ ->' _ : Type Type -> Type [gather (e E) format(o y o o)] .
-
-    --- precisso de ver o unify do maude 
-
----(
-    A unificação que está defenida nos capitulos do livro
-    é um comando, ou seja ele não parece ser built-in para modules
-    a não ser que seja suposto estar a ver a parte de 
-    meta-level, mas não sei se devo estar a ver isso...
-    seria muitas mais coisas a ver
-)
+    op _ --> _ : Type Type -> Type [gather (e E) format(o y o o)] .
+    --- NOTA, usar --> é válido (e menos esquesito que ->'), posso substituir! DONE!
 
     sort Env . --- o gamma (ambiente/contexto)
     op nil : -> Env . 
-    op _,_:_ : Env Var Type -> Env . 
+    ---op _,_:_ : Env Var Type -> Env . 
 
+    --- NOVO --- VERIFICAR! DONE!    
+    sort Assign .
+    subsort Assign < Env .
+   
+    op _:_ : Var Type -> Assign [format(o g o o)] . 
+    --- prec mais baixo = thighter binding (ver manual de maude cap 3.9)
+    --- como ':' é mais baixo que ',' (default é 41), parenthesis não são obrigatórios
+    op _ _ : Env Env -> Env [id: nil assoc prec 50] .
+    --- podia ser _,_ mas n sei se um char a mais compensava a readability
+    --- FIM NOVO ---
+    
     ---op _|-_:_ : Env Term Type -> ?? . 
 
     sort PPair .
     op p : Env Type -> PPair .
+    op error : -> PPair . --- erro do PPair (caso occur-check)
     --- milner's type-inference
-    op inference : Term PPair -> PPair . 
+    op inference : Term -> PPair . 
 
     vars TYPE1 TYPE2 TYPE3 : Type .
     vars V1 V2 V3 : TypeVar . --- por acaso os typevar e var são a mesma coisa, não?
@@ -131,7 +135,7 @@ fmod LAMBDA is
     eq tsub(V1, TYPE1, V1) = TYPE1 .
     ceq tsub(V2, TYPE1, V1) = V2
         if V2 =/= V1 .
-    eq tsub((TYPE2 ->' TYPE3), TYPE1, V1) = tsub(TYPE2, TYPE1, V1) ->' tsub(TYPE3, TYPE1, V1) .
+    eq tsub((TYPE2 --> TYPE3), TYPE1, V1) = tsub(TYPE2, TYPE1, V1) --> tsub(TYPE3, TYPE1, V1) .
 
 ---(
 exemplos:
@@ -140,9 +144,15 @@ tsub("t1" ->' "t2" ->' "t1", "t3" ->' "t4", "t1") = ("t3" ->' "t4") ->' "t2" ->'
 tsub("t1" ->' "t2" ->' "t1", "t3" ->' "t4", "t2") = "t1" ->' ("t3" ->' "t4") ->' "t1"
 )
 
-    ---var C : NzNat .
+    --- tenho de fazer 5 eq (ceq), as que estão nas notas de tipos de FLP (unification of types)
 
-    ---eq inference(X1, P, C) = p(P,X1:"x"+) .
+    sorts Constraint SetOfConstraint .
+    subsort Constraint < SetOfConstraint .
+
+    op tsubcons : Constraint Type TypeVar -> Constraint .
+    --- tsbicons(t1==t2, t, a) -> (t1==t2)[t/a]
+
+    --- unify
     
 
 endfm

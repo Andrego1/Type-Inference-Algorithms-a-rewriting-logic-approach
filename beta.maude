@@ -1,5 +1,5 @@
 mod BETA is
-    including LAMBDA-CALCULUS .   
+    including LAMBDA .   
 
     vars T1 T2 T3 : Term .
     var X1 X2 : Var .

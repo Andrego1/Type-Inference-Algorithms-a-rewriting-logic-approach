@@ -1,0 +1,11 @@
+fmod COLOR-TEST is
+    sorts Color ColorList .
+    subsort Color < ColorList .
+    op red : -> Color [format (r! o)] .
+    op green : -> Color [format (g! o)] .
+    op blue : -> Color [format (b! o)] .
+    op yellow : -> Color [format (yu o)] .
+    op cyan : -> Color [format (cu o)] .
+    op magenta : -> Color [format (mu o)] .
+    op __ : ColorList ColorList -> ColorList [assoc] .
+endfm
