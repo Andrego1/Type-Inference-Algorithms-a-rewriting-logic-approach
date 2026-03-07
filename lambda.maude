@@ -75,7 +75,7 @@ fmod LAMBDA is
     op lambda _ _ : Var Term -> Term [format (b! o o o)] . 
     op app _ _ : Term Term -> Term [format (c! o o o)] . 
     --- talvez elemine um e apenas fica uma das maneiras
-    ---op _ app _ : Term Term -> Term [gather (e E) format (o g! o o)] . 
+    ---op _ app _ : Term Term -> Term [gather (e E) format (o c! o o)] . 
     --- tinha de resolver a ambiguidade!
     
 ---(
@@ -106,14 +106,15 @@ fmod LAMBDA is
     op nil : -> Env . 
     ---op _,_:_ : Env Var Type -> Env . 
 
-    --- NOVO --- VERIFICAR! DONE!    
+    --- NOVO --- VERIFICAR! DONE!
     sort Assign .
     subsort Assign < Env .
    
     op _:_ : Var Type -> Assign [format(o g o o)] . 
+
+    op _ _ : Env Env -> Env [id: nil assoc prec 50] .
     --- prec mais baixo = thighter binding (ver manual de maude cap 3.9)
     --- como ':' é mais baixo que ',' (default é 41), parenthesis não são obrigatórios
-    op _ _ : Env Env -> Env [id: nil assoc prec 50] .
     --- podia ser _,_ mas n sei se um char a mais compensava a readability
     --- FIM NOVO ---
     
@@ -125,7 +126,7 @@ fmod LAMBDA is
     --- milner's type-inference
     op inference : Term -> PPair . 
 
-    vars TYPE1 TYPE2 TYPE3 : Type .
+    vars TYPE1 TYPE2 TYPE3 TYPE4 : Type .
     vars V1 V2 V3 : TypeVar . --- por acaso os typevar e var são a mesma coisa, não?
     var P : PPair .
 
@@ -138,21 +139,67 @@ fmod LAMBDA is
     eq tsub((TYPE2 --> TYPE3), TYPE1, V1) = tsub(TYPE2, TYPE1, V1) --> tsub(TYPE3, TYPE1, V1) .
 
 ---(
-exemplos:
-tsub("t1" ->' "t3", "t2" ->' "t1", "t3") = "t1" ->' "t2" ->' "t1"
-tsub("t1" ->' "t2" ->' "t1", "t3" ->' "t4", "t1") = ("t3" ->' "t4") ->' "t2" ->' "t3" ->' "t4"
-tsub("t1" ->' "t2" ->' "t1", "t3" ->' "t4", "t2") = "t1" ->' ("t3" ->' "t4") ->' "t1"
+    exemplos:
+    tsub("t1" ->' "t3", "t2" ->' "t1", "t3") = "t1" ->' "t2" ->' "t1"
+    tsub("t1" ->' "t2" ->' "t1", "t3" ->' "t4", "t1") = ("t3" ->' "t4") ->' "t2" ->' "t3" ->' "t4"
+    tsub("t1" ->' "t2" ->' "t1", "t3" ->' "t4", "t2") = "t1" ->' ("t3" ->' "t4") ->' "t1"
 )
-
-    --- tenho de fazer 5 eq (ceq), as que estão nas notas de tipos de FLP (unification of types)
 
     sorts Constraint SetOfConstraint .
     subsort Constraint < SetOfConstraint .
 
-    op tsubcons : Constraint Type TypeVar -> Constraint .
-    --- tsbicons(t1==t2, t, a) -> (t1==t2)[t/a]
-
-    --- unify
+    op _=_ : Type Type -> Constraint .
+    op nil : -> Constraint . --- poderia fazer nil um sort próprio ....
+    op _ _ : Constraint Constraint -> SetOfConstraint [assoc id: nil prec 50] .
     
+
+    op tsubcons : Constraint Type TypeVar -> Constraint .
+    --- tsubcons(t1=t2, t, a) -> (t1=t2)[t/a]
+    eq tsubcons(nil, TYPE1, V1) = nil .
+    eq tsubcons(TYPE1 = TYPE2, TYPE3, V1) = (tsub(TYPE1, TYPE3, V1) = tsub(TYPE2, TYPE3, V1)) .
+
+    op tsubcons2 : SetOfConstraint Type -> Type .
+    eq tsubcons2(nil, TYPE1) = TYPE1 .
+    eq tsubcons2(V1 = TYPE1 S1, TYPE2) = tsubcons2(S1, (tsub(TYPE2, TYPE1, V1))) .
+    -----
+
+    var S1 S2 : SetOfConstraint .
+
+    --- free-variable no sentido de que ocorre em t
+    --- defenição formal: fv(x) = {x}
+    op fv : TypeVar Type -> Bool .
+    --- fv(x,t) -> if x occurs in t true else false 
+    eq fv(V1, V1) = true .
+    ceq fv(V1, V2) = false
+        if V1 =/= V2 .
+    eq fv(V1, TYPE1 --> TYPE2) = fv(V1, TYPE1) or fv(V1, TYPE2) .
+
+    op fail : -> Constraint .
+
+    --- unify types
+    --- unify(("t1" --> "t2" --> "t3") = "a" --> "b" --> "c") gives kind?
+    ---  unify("x" = "y" --> "x") OK
+    --- unify("x" = "y" --> "y") OK
+    op unify : SetOfConstraint -> SetOfConstraint .
+    eq unify(nil) = nil .
+    eq unify(TYPE1 = TYPE1 S1) = unify(S1) . 
+    eq unify(TYPE1 --> TYPE2 = TYPE3 --> TYPE4 S1) = unify((TYPE1 = TYPE3) (TYPE2 = TYPE4) (S1)) .
+    eq unify(TYPE1 = V1 S1) = (V1 = TYPE1) unify(S1) .
+    ceq unify(V1 = TYPE1 S1) = (V1 = TYPE1) unify(tsubcons(S1, TYPE1, V1))
+        if fv(V1,TYPE1) == false . --- e x pertence fv(S1)
+    ceq unify(V1 = TYPE1 S1) = fail 
+        if V1 =/= TYPE1 /\ fv(V1,TYPE1) == true .
+
+---(    op unifyr : Type Type -> SetOfConstraint .
+    ceq unifyr(V1,TYPE1) = (V1 = TYPE1)
+        if fv(V1,TYPE1) == false . --- e x pertence fv(S1)
+    ceq unifyr(V1,TYPE1) = nil 
+        if V1 == TYPE1 .
+    ceq unifyr(V1,TYPE1) = fail 
+        if V1 =/= TYPE1 /\ fv(V1,TYPE1) == true .
+    eq unifyr(TYPE1 --> TYPE2, V1) = unifyr(V1, TYPE1 --> TYPE2) . 
+    ceq unifyr(TYPE1 --> TYPE2, TYPE3 --> TYPE4) = S unifyr(tsubcons2(S,TYPE1) = tsubcons2(S,TYPE3))
+        if unifyr(TYPE2,TYPE4) = S /\ S =/= fail . --- bad S...
+)
 
 endfm
