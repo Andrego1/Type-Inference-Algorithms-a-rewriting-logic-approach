@@ -4,6 +4,8 @@ fmod LAMBDA is
     protecting STRING .
     protecting BOOL .
 
+    --- Lambda Terms ---
+
     ---- sorts
     sorts Var Term .
     subsort Var < Term . 
@@ -16,6 +18,9 @@ fmod LAMBDA is
     op lambda : Var Term -> Term [format (b! o)] . --- abstração
     op app : Term Term -> Term [format (c! o)] .  --- aplicação
 
+    vars T1 T2 T3 : Term . 
+    var X1 X2 : Var . 
+
 ---(
     exemplos:
     (lx.x) = lambda("x", "x") ou lambda(x(1), x(1))
@@ -26,16 +31,12 @@ fmod LAMBDA is
 
 )   
 
-
 --------------------------------------------------------------
 --- Para ser honesto, não me lembro se era para fazer isto, mas se não for serve como treino
 
     op sub : Term Var Term -> Term .
     --- funciona como sub(M, X, N) = M[N/X]
     op r _ : Term -> Term .
-
-    vars T1 T2 T3 : Term . 
-    var X1 X2 : Var . 
 
     --- estas eq são para substituição
     --- parece-me que está bem
@@ -87,16 +88,15 @@ fmod LAMBDA is
     ((lxy.xyx)(lxy.x))(lxy.y) = app app lambda "x" lambda "y" app app "x" "y" "x" lambda "x" lambda "y" "x" lambda "x" lambda "y" "y"
 )   
 
-
 --------------------------------------------------------------
-    --- types
-    --- work in progress
+    --- Types ---
 
     sorts Type TypeVar . 
     subsorts TypeVar < Type . 
     subsorts String < TypeVar . 
 
-    op t(_) : NzNat -> TypeVar . --- type
+    op t(_) : NzNat -> TypeVar . --- type, ex: t(1), t(2), ...
+    op t(_) : String -> TypeVar . --- type, ex: t("asa"), ,t("as"), ....
 
     --- precisa de ser right associative, acho que está bem
     op _ --> _ : Type Type -> Type [gather (e E) format(o y o o)] .
@@ -106,7 +106,6 @@ fmod LAMBDA is
     op nil : -> Env . 
     ---op _,_:_ : Env Var Type -> Env . 
 
-    --- NOVO --- VERIFICAR! DONE!
     sort Assign .
     subsort Assign < Env .
    
@@ -121,14 +120,43 @@ fmod LAMBDA is
     ---op _|-_:_ : Env Term Type -> ?? . 
 
     sort PPair .
-    op p : Env Type -> PPair .
+
+    vars TYPE1 TYPE2 TYPE3 TYPE4 : Type .
+    vars V1 V2 V3 : TypeVar . 
+    var P : PPair .
+    var E1 E2 : Env .
+
+    op p : Env Type -> PPair [format (g! o)] .
     op error : -> PPair . --- erro do PPair (caso occur-check)
     --- milner's type-inference
     op inference : Term -> PPair . 
 
-    vars TYPE1 TYPE2 TYPE3 TYPE4 : Type .
-    vars V1 V2 V3 : TypeVar . --- por acaso os typevar e var são a mesma coisa, não?
-    var P : PPair .
+    eq inference(V1) = p(V1 : t(V1), t(V1)) .
+    eq inference(app T1 T2) = computeA(inference(T1), inference(T2), freeVar(app T1 T2)) .
+    ---eq inference(lambda V1 T1) = computeL(inference(T1)) . 
+    
+    --- unecessary?
+    ---sort Vars .
+    ---subsort Var < Vars .
+    --- para defenir listas de variaveis, posso mudar o sort atual depois!
+    op _ _ : Term Term -> Term [assoc id: nil prec 50].
+    var VARS : Term .
+    op nil : -> Term . --- estou a usar muitos nil xD
+
+    op freeVar : Term -> Term .
+    eq freeVar(V1) = V1 .
+    eq freeVar(app T1 T2) = freeVar(T1) freeVar(T2) .
+    eq freeVar(lambda V1 T1) = exclude(freeVar(T1),V1) .
+
+    op exclude : Term Var -> Term .
+    --- exclude(v1 v2 v3 v4, v2) -> v1 v3 v4
+    eq exclude(nil,V2) = nil .
+    eq exclude(V1 VARS, V1) = exclude(VARS, V1) .
+    ceq exclude(V1 VARS, V2) = V1 exclude(VARS, V2)
+        if V1 =/= V2 .
+
+    op computeA : PPair PPair Term -> PPair .
+    ---eq computeA(p(E1,TYPE1),p(E2,TYPE2), VARS) = 
 
     op tsub : Type Type TypeVar -> Type .
     --- tsub(o,t,p) -> o[t/p]
@@ -140,9 +168,9 @@ fmod LAMBDA is
 
 ---(
     exemplos:
-    tsub("t1" ->' "t3", "t2" ->' "t1", "t3") = "t1" ->' "t2" ->' "t1"
-    tsub("t1" ->' "t2" ->' "t1", "t3" ->' "t4", "t1") = ("t3" ->' "t4") ->' "t2" ->' "t3" ->' "t4"
-    tsub("t1" ->' "t2" ->' "t1", "t3" ->' "t4", "t2") = "t1" ->' ("t3" ->' "t4") ->' "t1"
+    tsub("t1" --> "t3", "t2" --> "t1", "t3") = "t1" --> "t2" --> "t1"
+    tsub("t1" --> "t2" --> "t1", "t3" --> "t4", "t1") = ("t3" --> "t4") --> "t2" --> "t3" --> "t4"
+    tsub("t1" --> "t2" --> "t1", "t3" --> "t4", "t2") = "t1" --> ("t3" --> "t4") --> "t1"
 )
 
     sorts Constraint SetOfConstraint .
@@ -157,11 +185,6 @@ fmod LAMBDA is
     --- tsubcons(t1=t2, t, a) -> (t1=t2)[t/a]
     eq tsubcons(nil, TYPE1, V1) = nil .
     eq tsubcons(TYPE1 = TYPE2 S1, TYPE3, V1) = (tsub(TYPE1, TYPE3, V1) = tsub(TYPE2, TYPE3, V1)) tsubcons(S1, TYPE1, V1).
-
-    ---op tsubcons2 : SetOfConstraint Type -> Type .
-    ---eq tsubcons2(nil, TYPE1) = TYPE1 .
-    ---eq tsubcons2(V1 = TYPE1 S1, TYPE2) = tsubcons2(S1, (tsub(TYPE2, TYPE1, V1))) .
-    -----
 
     var S1 S2 : SetOfConstraint .
     var C1 : Constraint .
@@ -194,21 +217,6 @@ fmod LAMBDA is
         if fv(V1,TYPE1) == false . --- e x pertence fv(S1)
     ceq unify(V1 = TYPE1 S1, S2) = fail 
         if V1 =/= TYPE1 /\ fv(V1,TYPE1) == true .
-
-    ---op aux : SetOfConstraint -> SetOfConstraint .
-    ---eq aux(S1 fail) = fail .
-    ---eq aux(fail S2) = fail .
-
-    ---op unifyr : Type Type -> SetOfConstraint .
-    ---ceq unifyr(V1,TYPE1) = (V1 = TYPE1)
-    ---    if fv(V1,TYPE1) == false . --- e x pertence fv(S1)
-    ---ceq unifyr(V1,TYPE1) = nil 
-    ---    if V1 == TYPE1 .
-    ---ceq unifyr(V1,TYPE1) = fail 
-    ---    if V1 =/= TYPE1 /\ fv(V1,TYPE1) == true .
-    ---eq unifyr(TYPE1 --> TYPE2, V1) = unifyr(V1, TYPE1 --> TYPE2) . 
-    ---ceq unifyr(TYPE1 --> TYPE2, TYPE3 --> TYPE4) = S unifyr(tsubcons2(S,TYPE1) = tsubcons2(S,TYPE3))
-    ---    if unifyr(TYPE2,TYPE4) = S /\ S =/= fail . --- bad S...
 
 
 endfm
