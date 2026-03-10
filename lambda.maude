@@ -150,23 +150,24 @@ fmod LAMBDA is
 
     op _=_ : Type Type -> Constraint .
     op nil : -> Constraint . --- poderia fazer nil um sort próprio ....
-    op _ _ : Constraint Constraint -> SetOfConstraint [assoc id: nil prec 50] .
-    
+    op _ _ : SetOfConstraint SetOfConstraint -> SetOfConstraint [assoc id: nil prec 50] .
+    --- can not be Constraint Constraint if so more thant two is kind!
 
-    op tsubcons : Constraint Type TypeVar -> Constraint .
+    op tsubcons : SetOfConstraint Type TypeVar -> SetOfConstraint .
     --- tsubcons(t1=t2, t, a) -> (t1=t2)[t/a]
     eq tsubcons(nil, TYPE1, V1) = nil .
-    eq tsubcons(TYPE1 = TYPE2, TYPE3, V1) = (tsub(TYPE1, TYPE3, V1) = tsub(TYPE2, TYPE3, V1)) .
+    eq tsubcons(TYPE1 = TYPE2 S1, TYPE3, V1) = (tsub(TYPE1, TYPE3, V1) = tsub(TYPE2, TYPE3, V1)) tsubcons(S1, TYPE1, V1).
 
-    op tsubcons2 : SetOfConstraint Type -> Type .
-    eq tsubcons2(nil, TYPE1) = TYPE1 .
-    eq tsubcons2(V1 = TYPE1 S1, TYPE2) = tsubcons2(S1, (tsub(TYPE2, TYPE1, V1))) .
+    ---op tsubcons2 : SetOfConstraint Type -> Type .
+    ---eq tsubcons2(nil, TYPE1) = TYPE1 .
+    ---eq tsubcons2(V1 = TYPE1 S1, TYPE2) = tsubcons2(S1, (tsub(TYPE2, TYPE1, V1))) .
     -----
 
     var S1 S2 : SetOfConstraint .
+    var C1 : Constraint .
 
     --- free-variable no sentido de que ocorre em t
-    --- defenição formal: fv(x) = {x}
+    --- defenição formal: fv(x) = {x}, os outros não uso
     op fv : TypeVar Type -> Bool .
     --- fv(x,t) -> if x occurs in t true else false 
     eq fv(V1, V1) = true .
@@ -177,29 +178,37 @@ fmod LAMBDA is
     op fail : -> Constraint .
 
     --- unify types
-    --- unify(("t1" --> "t2" --> "t3") = "a" --> "b" --> "c") gives kind?
-    ---  unify("x" = "y" --> "x") OK
-    --- unify("x" = "y" --> "y") OK
-    op unify : SetOfConstraint -> SetOfConstraint .
-    eq unify(nil) = nil .
-    eq unify(TYPE1 = TYPE1 S1) = unify(S1) . 
-    eq unify(TYPE1 --> TYPE2 = TYPE3 --> TYPE4 S1) = unify((TYPE1 = TYPE3) (TYPE2 = TYPE4) (S1)) .
-    eq unify(TYPE1 = V1 S1) = (V1 = TYPE1) unify(S1) .
-    ceq unify(V1 = TYPE1 S1) = (V1 = TYPE1) unify(tsubcons(S1, TYPE1, V1))
+    --- unify("t1" --> "t2" --> "t3" = "a" --> "b" --> "c",nil) OK
+    --- unify("a" = "1" "b" = "2" "c" = "3", nil) OK
+    --- in fact were there is more than 2 constraints it is kind either in res or given
+    --- CORRECTED, SetOfConstraint was only 2 Constraint and not 2 SetOfConstraint
+    --- unify("x" = "y" --> "x", nil) OK
+    --- unify("x" = "y" --> "y", nil) OK
+    op unify : SetOfConstraint SetOfConstraint -> SetOfConstraint .
+    eq unify(nil, S2) = S2 .
+    eq unify(fail S1, S2) = fail .
+    eq unify(TYPE1 = TYPE1 S1, S2) = unify(S1, S2) . 
+    eq unify(TYPE1 --> TYPE2 = TYPE3 --> TYPE4 S1, S2) = unify((TYPE1 = TYPE3) (TYPE2 = TYPE4) (S1), S2) .
+    eq unify(TYPE1 --> TYPE2 = V1 S1, S2) = unify((V1 = TYPE1 --> TYPE2) (S1), S2) . 
+    ceq unify(V1 = TYPE1 S1, S2) = unify(tsubcons(S1, TYPE1, V1), (V1 = TYPE1) tsubcons(S2, TYPE1, V1))
         if fv(V1,TYPE1) == false . --- e x pertence fv(S1)
-    ceq unify(V1 = TYPE1 S1) = fail 
+    ceq unify(V1 = TYPE1 S1, S2) = fail 
         if V1 =/= TYPE1 /\ fv(V1,TYPE1) == true .
 
----(    op unifyr : Type Type -> SetOfConstraint .
-    ceq unifyr(V1,TYPE1) = (V1 = TYPE1)
-        if fv(V1,TYPE1) == false . --- e x pertence fv(S1)
-    ceq unifyr(V1,TYPE1) = nil 
-        if V1 == TYPE1 .
-    ceq unifyr(V1,TYPE1) = fail 
-        if V1 =/= TYPE1 /\ fv(V1,TYPE1) == true .
-    eq unifyr(TYPE1 --> TYPE2, V1) = unifyr(V1, TYPE1 --> TYPE2) . 
-    ceq unifyr(TYPE1 --> TYPE2, TYPE3 --> TYPE4) = S unifyr(tsubcons2(S,TYPE1) = tsubcons2(S,TYPE3))
-        if unifyr(TYPE2,TYPE4) = S /\ S =/= fail . --- bad S...
-)
+    ---op aux : SetOfConstraint -> SetOfConstraint .
+    ---eq aux(S1 fail) = fail .
+    ---eq aux(fail S2) = fail .
+
+    ---op unifyr : Type Type -> SetOfConstraint .
+    ---ceq unifyr(V1,TYPE1) = (V1 = TYPE1)
+    ---    if fv(V1,TYPE1) == false . --- e x pertence fv(S1)
+    ---ceq unifyr(V1,TYPE1) = nil 
+    ---    if V1 == TYPE1 .
+    ---ceq unifyr(V1,TYPE1) = fail 
+    ---    if V1 =/= TYPE1 /\ fv(V1,TYPE1) == true .
+    ---eq unifyr(TYPE1 --> TYPE2, V1) = unifyr(V1, TYPE1 --> TYPE2) . 
+    ---ceq unifyr(TYPE1 --> TYPE2, TYPE3 --> TYPE4) = S unifyr(tsubcons2(S,TYPE1) = tsubcons2(S,TYPE3))
+    ---    if unifyr(TYPE2,TYPE4) = S /\ S =/= fail . --- bad S...
+
 
 endfm
