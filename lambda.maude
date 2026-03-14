@@ -28,7 +28,6 @@ fmod LAMBDA is
     (lx.xx)(lx.xx) = app(lambda("x", app("x", "x")), lambda("x", app("x", "x"))) 
     (lx.(ly.y)(lz.z)) = lambda("x", app(lambda("y","y"), lambda("z","z")))
     ((lxy.xyx)(lxy.x))(lxy.y) = app(app(lambda("x",lambda("y", app(app("x", "y"), "x"))), lambda("x", lambda("y", "x"))), lambda("x", lambda("y", "y")))
-
 )   
 
 --------------------------------------------------------------
@@ -77,7 +76,7 @@ fmod LAMBDA is
     op app _ _ : Term Term -> Term [format (c! o o o)] . 
     --- talvez elemine um e apenas fica uma das maneiras
     ---op _ app _ : Term Term -> Term [gather (e E) format (o c! o o)] . 
-    --- tinha de resolver a ambiguidade!
+    --- tinha de resolver a ambiguidade! e precedencia!
     
 ---(
     exemplos:
@@ -113,13 +112,13 @@ fmod LAMBDA is
 
     op _ _ : Env Env -> Env [id: nil assoc prec 50] .
     --- prec mais baixo = thighter binding (ver manual de maude cap 3.9)
-    --- como ':' é mais baixo que ',' (default é 41), parenthesis não são obrigatórios
+    --- como '_:_' é mais baixo que '_ _' (default é 41), parenthesis não são obrigatórios
     --- podia ser _,_ mas n sei se um char a mais compensava a readability
     --- FIM NOVO ---
     
     ---op _|-_:_ : Env Term Type -> ?? . 
 
-    sort PPair .
+    sort PPair . --- principal pair
 
     vars TYPE1 TYPE2 TYPE3 TYPE4 : Type .
     vars V1 V2 V3 : TypeVar . 
@@ -127,7 +126,7 @@ fmod LAMBDA is
     var E1 E2 : Env .
 
     op p : Env Type -> PPair [format (g! o)] .
-    op error : -> PPair . --- erro do PPair (caso occur-check)
+    op error : -> PPair . --- erro do PPair 
     --- milner's type-inference
     op inference : Term -> PPair . 
 
@@ -184,7 +183,7 @@ fmod LAMBDA is
     op tsubcons : SetOfConstraint Type TypeVar -> SetOfConstraint .
     --- tsubcons(t1=t2, t, a) -> (t1=t2)[t/a]
     eq tsubcons(nil, TYPE1, V1) = nil .
-    eq tsubcons(TYPE1 = TYPE2 S1, TYPE3, V1) = (tsub(TYPE1, TYPE3, V1) = tsub(TYPE2, TYPE3, V1)) tsubcons(S1, TYPE1, V1).
+    eq tsubcons(TYPE1 = TYPE2 S1, TYPE3, V1) = ((tsub(TYPE1, TYPE3, V1) = tsub(TYPE2, TYPE3, V1)) tsubcons(S1, TYPE3, V1)).
 
     var S1 S2 : SetOfConstraint .
     var C1 : Constraint .
@@ -203,10 +202,12 @@ fmod LAMBDA is
     --- unify types
     --- unify("t1" --> "t2" --> "t3" = "a" --> "b" --> "c",nil) OK
     --- unify("a" = "1" "b" = "2" "c" = "3", nil) OK
-    --- in fact were there is more than 2 constraints it is kind either in res or given
+    --- in fact, when there is more than 2 constraints it is a kind either in res or given
     --- CORRECTED, SetOfConstraint was only 2 Constraint and not 2 SetOfConstraint
     --- unify("x" = "y" --> "x", nil) OK
     --- unify("x" = "y" --> "y", nil) OK
+    --- unify("x" = "b" --> "a" "a" = "c" --> "b" "c" = "e", nil) ok
+    --- unify("x" = "b" --> "a" "a" = "c" --> "b" "c" = "e" "b" = "1" --> "2", nil)
     op unify : SetOfConstraint SetOfConstraint -> SetOfConstraint .
     eq unify(nil, S2) = S2 .
     eq unify(fail S1, S2) = fail .
