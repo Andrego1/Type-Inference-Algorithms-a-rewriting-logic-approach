@@ -96,6 +96,7 @@ fmod LAMBDA is
 
     op t(_) : NzNat -> TypeVar . --- type, ex: t(1), t(2), ...
     op t(_) : String -> TypeVar . --- type, ex: t("asa"), ,t("as"), ....
+    op t(_) : Term -> TypeVar . --- type, ex: t("asa"), ,t("as"), ....
 
     --- precisa de ser right associative, acho que está bem
     op _ --> _ : Type Type -> Type [gather (e E) format(o y o o)] .
@@ -123,39 +124,112 @@ fmod LAMBDA is
     vars TYPE1 TYPE2 TYPE3 TYPE4 : Type .
     vars V1 V2 V3 : TypeVar . 
     var P : PPair .
-    var E1 E2 : Env .
+    vars E1 E2 E3 E4 : Env .
+    vars A1 A2 : Assign .
 
     op p : Env Type -> PPair [format (g! o)] .
     op error : -> PPair . --- erro do PPair 
+
+---(
+    inference(lambda "x" app "x" "x") ok
+    inference(lambda "x" lambda "y" "x") ok
+    inference(lambda "x" lambda "y" "y") ok
+    inference(lambda "x" "z") ok, seguindo as regras acho que está bem
+    inference(lambda "x" app lambda "y" "y" lambda "z" "z") ok
+    inference(app lambda "x" lambda "y" app app "x" "y" "x" lambda "x" lambda "y" "x") não dá, acho que está bem (ghci não dá tipo)
+
+    I = lambda "x" "x"
+    K = lambda "x" lambda "y" "x"
+    S = lambda "x" lambda "y" lambda "z" app app "x" "z" app "y" "z"
+)    
     --- milner's type-inference
     op inference : Term -> PPair . 
 
-    eq inference(V1) = p(V1 : t(V1), t(V1)) .
-    eq inference(app T1 T2) = computeA(inference(T1), inference(T2), freeVar(app T1 T2)) .
-    ---eq inference(lambda V1 T1) = computeL(inference(T1)) . 
+    eq inference(X1) = p(X1 : t(X1), t(X1)) .
+    ceq inference(app T1 T2) = compute1(inference(T1), inference(T2), freeVar(app T1 T2), t(T1 T2))
+        if inference(T1) =/= error /\ inference(T2) =/= error .
+    eq inference(lambda X1 T1) = computeL(X1, lambda X1 T1, inference(T1)) . 
+
+    op computeL : Var Term PPair -> PPair .
+    eq computeL(X1, T1, error) = error .
+    ceq computeL(X1, T1, p(E1,TYPE1)) = p(E1, t(T1) --> TYPE1)
+        if dom(X1,E1) == nil .
+    eq computeL(X1, T1, p(E1,TYPE1)) = p(excludeE(E1,dom(X1,E1)), rg(dom(X1,E1)) --> TYPE1) .
     
+    op excludeE : Env Assign -> Env .
+    eq excludeE(nil, A1) = nil .
+    eq excludeE(A1 E1, A1) = E1 .
+    ceq excludeE(A2 E1, A1) = excludeE(E1, A1) 
+        if A2 =/= A1 .
+
+    op rg : Assign -> Type .
+    eq rg(X1 : TYPE1) = TYPE1 .
+
+    op nil : -> Assign . 
+
+    op dom : Var Env -> Assign .
+    eq dom(X1, nil) = nil .
+    ceq dom(X1, X2 : TYPE1 E1) = dom(X1, E1) 
+        if X1 =/= X2 .
+    eq  dom(X1, X1 : TYPE1 E1) = X1 : TYPE1 .
+
     --- unecessary?
     ---sort Vars .
     ---subsort Var < Vars .
     --- para defenir listas de variaveis, posso mudar o sort atual depois!
-    op _ _ : Term Term -> Term [assoc id: nil prec 50].
+    op _ _ : Term Term -> Term [assoc id: nil prec 50] .
+    eq X1 X1 = X1 . --- para ser idempotente (útil para freeVar e não dar erro)
+    eq X1 T1 X1 = X1 T1 .
     var VARS : Term .
     op nil : -> Term . --- estou a usar muitos nil xD
 
     op freeVar : Term -> Term .
-    eq freeVar(V1) = V1 .
+    eq freeVar(nil) = nil .
+    eq freeVar(X1) = X1 .
     eq freeVar(app T1 T2) = freeVar(T1) freeVar(T2) .
-    eq freeVar(lambda V1 T1) = exclude(freeVar(T1),V1) .
+    eq freeVar(lambda X1 T1) = exclude(freeVar(T1),X1) .
+
+    ---eq idem : Term -> Term .
+    ---eq idem(X1 X2 T1) = 
 
     op exclude : Term Var -> Term .
     --- exclude(v1 v2 v3 v4, v2) -> v1 v3 v4
-    eq exclude(nil,V2) = nil .
-    eq exclude(V1 VARS, V1) = exclude(VARS, V1) .
-    ceq exclude(V1 VARS, V2) = V1 exclude(VARS, V2)
-        if V1 =/= V2 .
+    eq exclude(nil,X2) = nil .
+    eq exclude(X1 VARS, X1) = exclude(VARS, X1) .
+    ceq exclude(X1 VARS, X2) = X1 exclude(VARS, X2)
+        if X1 =/= X2 .
 
-    op computeA : PPair PPair Term -> PPair .
-    ---eq computeA(p(E1,TYPE1),p(E2,TYPE2), VARS) = 
+    op compute1 : PPair PPair Term Type -> PPair .
+    eq compute1(p(E1,TYPE1),p(E2,TYPE2), VARS, TYPE3) = compute2(unify(computeA(E1,E2,VARS,nil) TYPE1 = TYPE2 --> TYPE3, nil), E1, E2, TYPE3) .
+
+    op compute2 : SetOfConstraint Env Env Type -> PPair .
+    eq compute2(nil, E1, E2, TYPE1) = p(E1 E2, TYPE1) .
+    eq compute2(fail, E1, E2, TYPE1) = error . --- unificação falhou
+    ceq compute2(S1, E1, E2, TYPE1) = p(applyE(S1, E1 E2, nil), applyT(S1,TYPE1))
+        if S1 =/= nil /\ S1 =/= fail .
+
+    --- o meu A é constraint onde tipos das fv(T1 T2) são iguais
+    --- (ver o ponto 2 no Milner's type-inference algorithm FLP) 
+    --- computeA("x" : "1" --> "2" "y" : "a" "q" : "a" --> "b", "y" : "c" --> "d" "x" : "t1" --> "t2","x" "y", nil)
+    op computeA : Env Env Term SetOfConstraint -> SetOfConstraint .
+    eq computeA(E1, E2, nil, S1) = S1 .
+    ceq computeA(E1, E2, X1 T1, S1) = computeA(E1, E2, T1, rg(dom(X1,E1)) = rg(dom(X1,E2)) S1)
+        if dom(X1,E1) =/= nil /\ dom(X1,E2) =/= nil .
+    --- não sei se está bem.... mas agora já não dá loop
+    ceq computeA(E1, E2, X1 T1, S1) = computeA(E1, E2, T1, S1)
+        if dom(X1,E1) == nil . 
+    ceq computeA(E1, E2, X1 T1, S1) = computeA(E1, E2, T1, S1)
+        if dom(X1,E2) == nil . 
+    ---eq computeA(E1 (X1 : TYPE1) E2, E3 (X1 : TYPE2) E4, X1 T1, S2) = computeA(E1 E2, E3 E4, T1, TYPE1 = TYPE2 S2) .
+
+    op applyT : SetOfConstraint Type -> Type .
+    eq applyT(nil, TYPE1) = TYPE1 .
+    eq applyT(V1 = TYPE1 S1, TYPE2) = applyT(S1, tsub(TYPE2, TYPE1, V1)) .
+
+    op applyE : SetOfConstraint Env Env -> Env .
+    eq applyE(S1, nil, E2) = E2 .
+    eq applyE(nil, E1, E2) = E2 . --- e se for nil desde o inicio? retorna o E2 que também é nil?
+    eq applyE(V1 = TYPE1 S1, X1 : TYPE2 E1, E2) = applyE(S1, E1, X1 : tsub(TYPE2,TYPE1,V1) E2) .
 
     op tsub : Type Type TypeVar -> Type .
     --- tsub(o,t,p) -> o[t/p]
@@ -207,7 +281,7 @@ fmod LAMBDA is
     --- unify("x" = "y" --> "x", nil) OK
     --- unify("x" = "y" --> "y", nil) OK
     --- unify("x" = "b" --> "a" "a" = "c" --> "b" "c" = "e", nil) ok
-    --- unify("x" = "b" --> "a" "a" = "c" --> "b" "c" = "e" "b" = "1" --> "2", nil)
+    --- unify("x" = "b" --> "a" "a" = "c" --> "b" "c" = "e" "b" = "1" --> "2", nil) ok
     op unify : SetOfConstraint SetOfConstraint -> SetOfConstraint .
     eq unify(nil, S2) = S2 .
     eq unify(fail S1, S2) = fail .
