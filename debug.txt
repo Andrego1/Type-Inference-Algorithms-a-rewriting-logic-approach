@@ -1,0 +1,100 @@
+reduce in LAMBDA : inference(app app "x" "y" "x") .
+rewrites: 21 in 0ms cpu (0ms real) (~ rewrites/second)
+result PPair: p(applyE(unify(computeA(applyE(unify(computeA("x" : t("x"), "y" : t("y"), "x" "y", nil) t("x") = t("y") --> t("x" "y"),
+    nil), "x" : t("x") "y" : t("y"), nil), "x" : t("x"), "x" "y" "x", nil) applyT(unify(computeA("x" : t("x"), "y" : t("y"), "x" "y", nil)
+    t("x") = t("y") --> t("x" "y"), nil), t("x" "y")) = t("x") --> t(app "x" "y" "x"), nil), applyE(unify(computeA("x" : t("x"), "y" : t(
+    "y"), "x" "y", nil) t("x") = t("y") --> t("x" "y"), nil), "x" : t("x") "y" : t("y"), nil) "x" : t("x"), nil), applyT(unify(computeA(
+    applyE(unify(computeA("x" : t("x"), "y" : t("y"), "x" "y", nil) t("x") = t("y") --> t("x" "y"), nil), "x" : t("x") "y" : t("y"), nil),
+    "x" : t("x"), "x" "y" "x", nil) applyT(unify(computeA("x" : t("x"), "y" : t("y"), "x" "y", nil) t("x") = t("y") --> t("x" "y"), nil),
+    t("x" "y")) = t("x") --> t(app "x" "y" "x"), nil), t(app "x" "y" "x")))
+
+
+reduce in LAMBDA : inference(app "x" "y") .
+rewrites: 10 in 0ms cpu (0ms real) (~ rewrites/second)
+result PPair: 
+p(
+    applyE(
+        unify(
+            computeA(
+                "x" : t("x"), 
+                "y" : t("y"), 
+                "x" "y", 
+                nil) 
+                t("x") = t("y") --> t("x" "y"), 
+            nil),
+            "x" : t("x") "y" : t("y"), 
+            nil),
+        applyT(
+            unify(
+                computeA(
+                    "x" : t("x"),
+                    "y" : t("y"),
+                    "x" "y",
+                    nil) 
+                    t("x") = t("y") --> t("x" "y"),
+                    nil),
+                    t("x" "y")
+                    )
+    )
+
+
+reduce in LAMBDA : freeVar(app app "x" "y" "x") .
+rewrites: 5 in 0ms cpu (0ms real) (~ rewrites/second)
+result Term: "x" "y" "x"
+
+
+
+
+--- neste depois alterei o o inference, tenho de verificar
+Debug(1)> red inference(app app "x" "z" app "y" "z") .
+reduce in LAMBDA : inference(app app "x" "z" app "y" "z") .
+rewrites: 122 in 0ms cpu (0ms real) (~ rewrites/second)
+result PPair: p("x" : t("z") --> t("x" "z") "z" : t("z") "y" : t("z") --> t("y" "z") "z" : t("z"), t(app "x" "z" app
+    "y" "z"))
+
+Debug(1)> red inference(app "x" "z") .
+reduce in LAMBDA : inference(app "x" "z") .
+rewrites: 36 in 0ms cpu (0ms real) (~ rewrites/second)
+result PPair: p("z" : t("z") "x" : t("z") --> t("x" "z"), t("x" "z"))
+
+Debug(1)> red inference(app "y" "z") .
+reduce in LAMBDA : inference(app "y" "z") .
+rewrites: 36 in 0ms cpu (0ms real) (~ rewrites/second)
+result PPair: p("z" : t("z") "y" : t("z") --> t("y" "z"), t("y" "z"))
+
+Debug(1)> red freeVar(app "x" "z") .
+reduce in LAMBDA : freeVar(app "x" "z") .
+rewrites: 3 in 0ms cpu (0ms real) (~ rewrites/second)
+result Term: "x" "z"
+
+Debug(1)> red freeVar(app "y" "z") .
+reduce in LAMBDA : freeVar(app "y" "z") .
+rewrites: 3 in 0ms cpu (0ms real) (~ rewrites/second)
+result Term: "y" "z"
+
+Debug(1)> red intersect("y" "z", "x" "z") .
+reduce in LAMBDA : intersect("y" "z", "x" "z") .
+rewrites: 4 in 0ms cpu (0ms real) (~ rewrites/second)
+result Char: "z"
+
+Debug(1)> red compute1(p("z" : t("z") "x" : t("z") --> t("x" "z"), t("x" "z")), p("z" : t("z") "y" : t("z") --> t("y" "z"), t("y" "z")), "z", t(app "x" "z" app "y" "z")) .
+reduce in LAMBDA : compute1(p("z" : t("z") "x" : t("z") --> t("x" "z"), t("x" "z")), p("z" : t("z") "y" : t("z") --> t(
+    "y" "z"), t("y" "z")), "z", t(app "x" "z" app "y" "z")) .
+rewrites: 37 in 0ms cpu (0ms real) (~ rewrites/second)
+result PPair: p("x" : t("z") --> t("x" "z") "z" : t("z") "y" : t("z") --> t("y" "z") "z" : t("z"), t(app "x" "z" app
+    "y" "z"))
+Debug(1)> load lambda.maude
+Advisory: redefining module LAMBDA.
+
+Debug(1)> red compute1(p("z" : t("z") "x" : t("z") --> t("x" "z"), t("x" "z")), p("z" : t("z") "y" : t("z") --> t("y" "z"), t("y" "z")), "z", t(app "x" "z" app "y" "z")) .
+reduce in LAMBDA : compute1(p("z" : t("z") "x" : t("z") --> t("x" "z"), t("x" "z")), p("z" : t("z") "y" : t("z") --> t(
+    "y" "z"), t("y" "z")), "z", t(app "x" "z" app "y" "z")) .
+rewrites: 37 in 0ms cpu (0ms real) (~ rewrites/second)
+result PPair: p("x" : t("z") --> t("x" "z") "z" : t("z") "y" : t("z") --> t("y" "z") "z" : t("z"), t(app "x" "z" app
+    "y" "z"))
+
+Debug(1)> red computeA("z" : t("z") "x" : t("z") --> t("x" "z"), "z" : t("z") "y" : t("z") --> t("y" "z"), "z", nil) .
+reduce in LAMBDA : computeA("z" : t("z") "x" : t("z") --> t("x" "z"), "z" : t("z") "y" : t("z") --> t("y" "z"), "z",
+    nil) .
+rewrites: 10 in 0ms cpu (0ms real) (~ rewrites/second)
+result Constraint: t("z") = t("z")

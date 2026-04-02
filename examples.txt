@@ -1,0 +1,34 @@
+# Examples for LAMBDA module
+
+## Operator lambda & app 
+
+(lx.x) = lambda("x", "x") ou lambda(x(1), x(1))
+(lxy.x) = lambda("x", lambda("y", "x")) ou com "x" = x(1) e "y" = x(2)
+(lx.xx)(lx.xx) = app(lambda("x", app("x", "x")), lambda("x", app("x", "x"))) 
+(lx.(ly.y)(lz.z)) = lambda("x", app(lambda("y","y"), lambda("z","z")))
+((lxy.xyx)(lxy.x))(lxy.y) = app(app(lambda("x",lambda("y", app(app("x", "y"), "x"))), lambda("x", lambda("y", "x"))), lambda("x", lambda("y", "y")))
+
+
+(lx.x) = lambda "x" "x"
+(lxy.x) = lambda "x" lambda "y" "x"
+(lx.xx)(lx.xx) = app lambda "x" app "x" "x" lambda "x" app "x" "x"
+(lx.(ly.y)(lz.z)) = lambda "x" app lambda "y" "y" lambda "z" "z"
+((lxy.xyx)(lxy.x))(lxy.y) = app app lambda "x" lambda "y" app app "x" "y" "x" lambda "x" lambda "y" "x" lambda "x" lambda "y" "y"
+
+## Inference Examples
+
+inference(lambda "x" app "x" "x") ok
+inference(lambda "x" lambda "y" "x") ok
+inference(lambda "x" lambda "y" "y") ok
+inference(lambda "x" "z") ok, seguindo as regras acho que está bem
+inference(lambda "x" app lambda "y" "y" lambda "z" "z") ok
+inference(app lambda "x" lambda "y" app app "x" "y" "x" lambda "x" lambda "y" "x") não dá, acho que está bem (ghci não dá tipo)
+
+Combinators:
+I = lambda "x" "x"
+K = lambda "x" lambda "y" "x"
+S = lambda "x" lambda "y" lambda "z" app app "x" "z" app "y" "z"
+
+inference(lambda "x" "x")
+inference(lambda "x" lambda "y" "x")
+inference(lambda "x" lambda "y" lambda "z" app app "x" "z" app "y" "z")
