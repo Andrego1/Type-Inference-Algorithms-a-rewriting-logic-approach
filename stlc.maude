@@ -1,4 +1,4 @@
-fmod LAMBDA is
+fmod STLC is
     --- modules importados
     protecting NAT .
     protecting STRING .
