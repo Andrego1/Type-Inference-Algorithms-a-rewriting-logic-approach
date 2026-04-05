@@ -73,7 +73,14 @@ fmod LAMBDA is
     op _:_ : Var Type -> Assign [format(o g o o)] . 
 
     op _ _ : Env Env -> Env [id: nil assoc comm prec 50] .
-    --- eq A1 A2 E1 = A1 E1 . --- ao usar ele não corre e sai do maude
+    ---ceq A1 E1 = E1 
+    ---    if occurs(A1,E1) =/= nil .
+    ---op occurs : Assign Env -> Env .
+    ---eq occurs(A1,nil) = nil .
+    ---eq occurs(A1, A1 E1) = A1 .
+    ---ceq occurs(A1, A2 E1) = occurs(A1, E1)
+    ---    if A1 =/= A2 .
+    --- ao usar ele não corre e sai do maude
     --- prec mais baixo = thighter binding (ver manual de maude cap 3.9)
     --- como '_:_' é mais baixo que '_ _' (default é 41), parenthesis não são obrigatórios
     --- podia ser _,_ mas n sei se um char a mais compensava a readability
