@@ -24,7 +24,7 @@ inference(lambda "x" "z") ok, seguindo as regras acho que está bem
 inference(lambda "x" app lambda "y" "y" lambda "z" "z") ok
 inference(app lambda "x" lambda "y" app app "x" "y" "x" lambda "x" lambda "y" "x") não dá, acho que está bem (ghci não dá tipo)
 
-Combinators:
+the combinators:
 I = lambda "x" "x"
 K = lambda "x" lambda "y" "x"
 S = lambda "x" lambda "y" lambda "z" app app "x" "z" app "y" "z"

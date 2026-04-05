@@ -34,7 +34,7 @@ fmod LAMBDA is
 
     --- Novas forma de escrever
 
-    --- na verdade acho que não preciso de ter como app2, posso ter app, overloading, tem formato diferente apenas
+    --- nota que existe overloading
     op lambda _ _ : Var Term -> Term [format (b! o o o)] . 
     op app _ _ : Term Term -> Term [format (c! o o o)] . 
     --- talvez elemine um e apenas fica uma das maneiras
@@ -73,7 +73,7 @@ fmod LAMBDA is
     op _:_ : Var Type -> Assign [format(o g o o)] . 
 
     op _ _ : Env Env -> Env [id: nil assoc comm prec 50] .
-    --- eq (A1 A1 E1) = (A1 E1) .
+    --- eq A1 A2 E1 = A1 E1 . --- ao usar ele não corre e sai do maude
     --- prec mais baixo = thighter binding (ver manual de maude cap 3.9)
     --- como '_:_' é mais baixo que '_ _' (default é 41), parenthesis não são obrigatórios
     --- podia ser _,_ mas n sei se um char a mais compensava a readability
@@ -86,6 +86,10 @@ fmod LAMBDA is
     var P : PPair .
     vars E1 E2 E3 E4 : Env .
     vars A1 A2 : Assign .
+    vars N1 N2 N3 : NzNat .
+    sort Pair .
+    op pair : PPair NzNat -> Pair .
+    op errorp : -> Pair .
 
     op p : Env Type -> PPair [format (g! o)] .
     op error : -> PPair . --- erro do PPair 
@@ -102,6 +106,47 @@ fmod LAMBDA is
     K = lambda "x" lambda "y" "x"
     S = lambda "x" lambda "y" lambda "z" app app "x" "z" app "y" "z"
 )    
+
+
+
+    --- inference com numeros
+
+    op inference : Term NzNat -> Pair . 
+    eq inference(X1, N1) = pair(p(X1 : t(N1), t(N1)), N1) .
+    ceq inference(app T1 T2, N1) = compute1'(inference(T1, N1), T2, intersect(freeVar(T1), freeVar(T2)))
+        if inference(T1, N1) =/= errorp .
+    eq inference(lambda X1 T1, N1) = computeL(X1, inference(T1,N1)) . 
+
+    op compute1' : Pair Term Term -> Pair . 
+    ceq compute1'(pair(p(E1,TYPE1), N1), T2, VARS) = compute1(pair(p(E1,TYPE1), N1), inference(T2, N1 + 1), VARS) 
+        if inference(T2, N1 + 1) =/= errorp .
+    
+    op compute1 : Pair Pair Term -> Pair .
+    eq compute1(pair(p(E1,TYPE1), N1),pair(p(E2,TYPE2),N2), VARS) = compute2(unify(computeA(E1,E2,VARS,nil) TYPE1 = TYPE2 --> t(N2 + 1), nil), E1, E2, t(N2 + 1), N2 + 1) .
+
+
+    op compute2 : SetOfConstraint Env Env Type NzNat -> Pair .
+    eq compute2(nil, E1, E2, TYPE1, N1) = pair(p(E1 E2, TYPE1),N1) .
+    eq compute2(fail, E1, E2, TYPE1, N1) = errorp . --- unificação falhou
+    ceq compute2(S1, E1, E2, TYPE1, N1) = pair(p(applyE'(S1, E1 E2), applyT(S1,TYPE1)),N1)
+        if S1 =/= nil /\ S1 =/= fail .
+
+
+    op computeL : Var Pair -> Pair .
+    eq computeL(X1, errorp) = errorp .
+    ceq computeL(X1, pair(p(E1,TYPE1),N1)) = pair(p(E1, t(N1 + 1) --> TYPE1), N1 + 2)
+        if dom(X1,E1) == nil .
+    eq computeL(X1, pair(p(E1,TYPE1),N1)) = pair(p(excludeE(E1,dom(X1,E1)), rg(dom(X1,E1)) --> TYPE1),N1) .
+
+
+    op applyE' : SetOfConstraint Env -> Env .
+    eq applyE'(nil, E1) = E1 . 
+    eq applyE'(V1 = TYPE1 S1, E1) = applyE'(S1, (applyE''(V1 = TYPE1, E1, nil))) .
+
+    op applyE'' : Constraint Env Env -> Env .
+    eq applyE''(C1, nil, E2) = E2 .
+    eq applyE''(V1 = TYPE1, X1 : TYPE2 E1, E2) = applyE''(V1 = TYPE1, E1, X1 : tsub(TYPE2,TYPE1,V1) E2) .
+
     --- milner's type-inference
     op inference : Term -> PPair . 
 
@@ -126,7 +171,7 @@ fmod LAMBDA is
     eq intersect(nil, T1) = nil .
     eq intersect(T1, nil) = nil .
     eq intersect(X1 T1, X1 T2) = X1 intersect(T1, T2) .
-    eq intersect(T1, T2) = nil [owise] .
+    eq intersect(T1, T2) = nil [owise] . --- otherwise
 
     op rg : Assign -> Type . --- range, ex: rg(x:t1) -> t1
     eq rg(X1 : TYPE1) = TYPE1 .
@@ -170,7 +215,7 @@ fmod LAMBDA is
 
     op compute2 : SetOfConstraint Env Env Type -> PPair .
     eq compute2(nil, E1, E2, TYPE1) = p(E1 E2, TYPE1) .
-    eq compute2(fail, E1, E2, TYPE1) = error . --- unificação falhou
+    eq compute2(fail, E1, E2, TYPE1) = error . --- caso de unificação falhar
     ceq compute2(S1, E1, E2, TYPE1) = p(applyE(S1, E1 E2, nil), applyT(S1,TYPE1))
         if S1 =/= nil /\ S1 =/= fail .
 

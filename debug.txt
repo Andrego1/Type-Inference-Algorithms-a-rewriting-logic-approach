@@ -1,3 +1,120 @@
+Maude> red inference(app "y" "z", 4) .
+reduce in LAMBDA : inference(app "y" "z", 4) .
+rewrites: 37 in 4ms cpu (0ms real) (9250 rewrites/second)
+result Pair: pair(p("y" : t(5) --> t(6) "z" : t(5), t(6)), 6)
+
+Maude> red inference(app "x" "z", 1) .
+reduce in LAMBDA : inference(app "x" "z", 1) .
+rewrites: 37 in 0ms cpu (0ms real) (~ rewrites/second)
+result Pair: pair(p("x" : t(2) --> t(3) "z" : t(2), t(3)), 3)
+
+Maude> red computeA("x" : t(2) --> t(3) "z" : t(2),"y" : t(5) --> t(6) "z" : t(5), "x" "y" "z", nil) .
+reduce in LAMBDA : computeA("x" : t(2) --> t(3) "z" : t(2), "y" : t(5) --> t(6) "z" : t(5), "x" "y" "z", nil) .
+rewrites: 88 in 0ms cpu (0ms real) (~ rewrites/second)
+result Constraint: t(2) = t(5)
+
+Maude> red computeA("x" : t(2) --> t(3) "z" : t(2),"y" : t(5) --> t(6) "z" : t(5), "x" "y" "z", nil) .
+reduce in LAMBDA : computeA("x" : t(2) --> t(3) "z" : t(2), "y" : t(5) --> t(6) "z" : t(5), "x" "y" "z", nil) .
+rewrites: 88 in 0ms cpu (0ms real) (~ rewrites/second)
+result Constraint: t(2) = t(5)
+
+Maude> red inference(app app "x" "z" app "y" "z", 1) .
+reduce in LAMBDA : inference(app app "x" "z" app "y" "z", 1) .
+rewrites: 158 in 4ms cpu (0ms real) (39500 rewrites/second)
+result Pair: pair(p("x" : t(2) --> t(6) --> t(7) "y" : t(5) --> t(6) "z" : t(2) "z" : t(5), t(7)), 7)
+
+Maude> red intersect(freeVar(app "x" "z"), freeVar(app "y" "z")) .
+reduce in LAMBDA : intersect(freeVar(app "x" "z"), freeVar(app "y" "z")) .
+rewrites: 8 in 0ms cpu (0ms real) (~ rewrites/second)
+result Char: "z"
+
+Maude> red unify(t(2) = t(5) t(3) = t(6) --> t(7), nil) .
+reduce in LAMBDA : unify(t(2) = t(5) t(3) = t(6) --> t(7), nil) .
+rewrites: 33 in 0ms cpu (0ms real) (~ rewrites/second)
+result SetOfConstraint: t(3) = t(6) --> t(7) t(2) = t(5)
+
+Maude> red applyE(t(3) = t(6) --> t(7) t(2) = t(5), "x" : t(2) --> t(3) "z" : t(2) "y" : t(5) --> t(6) "z" : t(5), nil) .
+reduce in LAMBDA : applyE(t(3) = t(6) --> t(7) t(2) = t(5), "x" : t(2) --> t(3) "z" : t(2) "y" : t(5) --> t(6) "z" : t(5), nil) .
+rewrites: 12 in 0ms cpu (0ms real) (~ rewrites/second)
+result Env: "x" : t(2) --> t(6) --> t(7) "y" : t(5) --> t(6) "z" : t(2) "z" : t(5)
+
+Maude> red applyE(t(2) = t(5), "x" : t(2) --> t(3) "z" : t(2) "y" : t(5) --> t(6) "z" : t(5), nil) .
+reduce in LAMBDA : applyE(t(2) = t(5), "x" : t(2) --> t(3) "z" : t(2) "y" : t(5) --> t(6) "z" : t(5), nil) .
+rewrites: 6 in 0ms cpu (0ms real) (~ rewrites/second)
+result Env: "x" : t(5) --> t(3) "y" : t(5) --> t(6) "z" : t(2) "z" : t(5)
+
+
+
+
+ok
+reduce in LAMBDA : applyE'(t(3) = t(6) --> t(7) t(2) = t(5), "x" : t(2) --> t(3) "z" : t(2) "y" : t(5) --> t(6) "z" : t(5)) .
+rewrites: 41 in 0ms cpu (0ms real) (~ rewrites/second)
+result Env: "x" : t(5) --> t(6) --> t(7) "y" : t(5) --> t(6) "z" : t(5) "z" : t(5)
+
+Maude> red inference(app app "x" "z" app "y" "z", 1) .
+reduce in LAMBDA : inference(app app "x" "z" app "y" "z", 1) .
+rewrites: 197 in 0ms cpu (0ms real) (~ rewrites/second)
+result Pair: pair(p("x" : t(5) --> t(6) --> t(7) "y" : t(5) --> t(6) "z" : t(5) "z" : t(5), t(7)), 7)
+
+Maude> red inference(lambda "x" lambda "y" lambda "z" app app "x" "z" app "y" "z",1) .
+reduce in LAMBDA : inference(lambda "x" lambda "y" lambda "z" app app "x" "z" app "y" "z", 1) .
+rewrites: 248 in 4ms cpu (0ms real) (62000 rewrites/second)
+result Pair: pair(p("z" : t(5), (t(5) --> t(6) --> t(7)) --> (t(5) --> t(6)) --> t(5) --> t(7)), 7)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 reduce in LAMBDA : inference(app app "x" "y" "x") .
 rewrites: 21 in 0ms cpu (0ms real) (~ rewrites/second)
 result PPair: p(applyE(unify(computeA(applyE(unify(computeA("x" : t("x"), "y" : t("y"), "x" "y", nil) t("x") = t("y") --> t("x" "y"),
