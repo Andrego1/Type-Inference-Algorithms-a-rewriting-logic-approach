@@ -1,0 +1,67 @@
+fmod POLY is
+    extending STLC . --- verifcar se este tipo de importação é o mais correto
+
+    sort TypeScheme .
+    subsort Type < TypeScheme .
+
+    vars TS1 TS2 TS3 : TypeScheme .
+    vars TYPE1 TYPE2 TYPE3 TYPE4 : Type .
+    vars V1 V2 V3 : TypeVar . 
+    vars E1 E2 E3 E4 : Env .
+    vars A1 A2 : Assign .
+    vars N1 N2 N3 : NzNat .
+    vars T1 T2 T3 : Term . 
+    var X1 X2 : Var .
+    var S1 S2 S3 : SetOfConstraint .
+    var C1 : Constraint .
+
+    op forall _ _ : TypeVar TypeScheme -> TypeScheme [format (g o o o)] . --- quantificador universal
+
+    op let _=_ in _ : Var Term Term -> Term [format (c o g o g o o)] .
+
+
+    op _:_ : Var TypeScheme -> Assign [format(o g o o)] . --- type < typescheme
+
+    ---sort Types .
+    ---subsort Type < Types .
+    ---op _,_ : Type Type -> Type [comm assoc id: nil prec 50] .
+    ---eq V1 V1 TYPE1 = V1 TYPE1 . --- para ser idempotente (útil para freeVar e não dar erro)
+    ---var TYPES : Type .
+    ---op null : -> Type . --- estava a usar muitos nil, Warning: sort declarations for constant nil do not have an unique least sort.
+    
+    sort WPair .
+    op wpair : SetOfConstraint TypeScheme NzNat -> WPair .
+
+    --- ATENCAO QUE NAO TESTEI EXEMPLOS para o w 
+
+    --- algoritmo w
+    op w : Env Term NzNat -> WPair .
+    eq w(E1, X1, N1) = compute(rg(dom(X1,E1)), N1, nil) .
+    eq w(E1, app T1 T2, N1) = compute1(w(E1,T1,N1),T2,E1) .
+    eq w(E1, lambda X1 T1, N1) = computeL(w(E1 X1 : t(N1), T1, N1 + 1), N1) .
+    
+    
+
+    --- auxiliar para caso 3)
+    op computeL : WPair NzNat -> WPair .
+    eq computeL(wpair(S1, TS1, N1), N2) = wpair(S1, applyT(S1,t(N2) --> TS1), N1) .
+
+    --- auxiliares para caso 2)
+    op compute1 : WPair Term Env -> WPair .
+    eq compute1(wpair(S1, TS1, N1), T2,E1) = compute2(wpair(S1, TS1, N1), w(applyE'(S1,E1), TS1, N1)) .
+
+    op compute2 : WPair WPair -> WPair .
+    eq compute2(wpair(S1, TS1, N1), wpair(S2, TS2, N2)) = compute3(wpair(S1, TS1, N1), wpair(S2, TS2, N2), unify(applyT(S2, TS1) = TS2 --> t(N2), nil)) .
+
+    op compute3 : WPair WPair SetOfConstraint -> WPair .
+    eq compute3(wpair(S1, TS1, N1), wpair(S2, TS2, N2), S3) = wpair(S1 S2 S3, applyT(S3, t(N2)), N2 + 1) .
+    --- dúvida com a composição do S1 S2 S3, estando nesta ordem resulta?
+
+
+    --- auxiliar para caso 1)
+    op compute : TypeScheme NzNat SetOfConstraint -> WPair .
+    eq compute(forall V1 TS1, N1, S1) = compute(TS1, N1 + 1, t(N1) = V1 S1) .
+    eq compute(TYPE1, N1, S1) = wpair(nil, applyT(S1, TYPE1), N1)  . --- lembrar que applyT : SetOfConstraint Type -> Type
+
+
+endfm

@@ -244,6 +244,8 @@ fmod STLC is
     eq applyT(nil, TYPE1) = TYPE1 .
     eq applyT(V1 = TYPE1 S1, TYPE2) = applyT(S1, tsub(TYPE2, TYPE1, V1)) .
 
+
+    --- este operador está mal feito em geral, ele apenas aplica uma vez no primeiro, não deve dar mal apenas com o contador
     op applyE : SetOfConstraint Env Env -> Env .
     eq applyE(S1, nil, E2) = E2 .
     eq applyE(nil, E1, E2) = E1 E2 . 

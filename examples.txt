@@ -1,4 +1,4 @@
-# Examples for LAMBDA module
+# Examples for STLC module
 
 ## Operator lambda & app 
 
@@ -32,3 +32,13 @@ S = lambda "x" lambda "y" lambda "z" app app "x" "z" app "y" "z"
 inference(lambda "x" "x")
 inference(lambda "x" lambda "y" "x")
 inference(lambda "x" lambda "y" lambda "z" app app "x" "z" app "y" "z")
+
+
+red inference(app lambda "x" lambda "y" lambda "z" app app "x" "z" app "y" "z" lambda "a" "a",1) .
+:t (\x -> \y -> \z -> x z (y z)) (\a -> a) para ghci
+
+
+# Examples for POLY
+
+let "i" = lambda "x" app "x" "y" in app "i" "i"
+
