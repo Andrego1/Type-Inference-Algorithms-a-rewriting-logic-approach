@@ -1,4 +1,4 @@
-fmod STLC is
+fmod ST is
     --- modules importados
     protecting NAT .
     protecting STRING .
