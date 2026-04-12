@@ -12,16 +12,16 @@ fmod STLC is
 
     subsort String < Var . --- para usar srings como variáveis ex: "x" ou até "yy"
 
-    --- não precisso de usar vars assim, agora
-    op x(_) : NzNat -> Var . --- varáveis, ex: x(1), x(2), ... 
-
-    op lambda : Var Term -> Term [format (b! o)] . --- abstração
-    op app : Term Term -> Term [format (c! o)] .  --- aplicação
-
     vars T1 T2 T3 : Term . 
     var X1 X2 : Var .
 
----(
+    op x(_) : NzNat -> Var . --- varáveis, ex: x(1), x(2), ... 
+
+---(DEPRECATED
+
+    ---op lambda : Var Term -> Term [format (b! o)] . --- abstração
+    ---op app : Term Term -> Term [format (c! o)] .  --- aplicação
+
     exemplos:
     (lx.x) = lambda("x", "x") ou lambda(x(1), x(1))
     (lxy.x) = lambda("x", lambda("y", "x")) ou com "x" = x(1) e "y" = x(2)
@@ -30,19 +30,14 @@ fmod STLC is
     ((lxy.xyx)(lxy.x))(lxy.y) = app(app(lambda("x",lambda("y", app(app("x", "y"), "x"))), lambda("x", lambda("y", "x"))), lambda("x", lambda("y", "y")))
 )   
 
---------------------------------------------------------------
+    op lambda _ _ : Var Term -> Term [format (b! o o o)] . --- abstração
+    op app _ _ : Term Term -> Term [format (c! o o o)] .   --- aplicação
 
-    --- Novas forma de escrever
-
-    --- nota que existe overloading
-    op lambda _ _ : Var Term -> Term [format (b! o o o)] . 
-    op app _ _ : Term Term -> Term [format (c! o o o)] . 
-    --- talvez elemine um e apenas fica uma das maneiras
     ---op _ app _ : Term Term -> Term [gather (e E) format (o c! o o)] . 
     --- tinha de resolver a ambiguidade! e precedencia!
     
----(
-    exemplos:
+---(exemplos:
+    
     (lx.x) = lambda "x" "x"
     (lxy.x) = lambda "x" lambda "y" "x"
     (lx.xx)(lx.xx) = app lambda "x" app "x" "x" lambda "x" app "x" "x"
@@ -68,19 +63,12 @@ fmod STLC is
     op nil : -> Env . 
 
     sort Assign .
-    subsort Assign < Env .
-   
     op _:_ : Var Type -> Assign [format(o g o o)] . 
 
-    op _ _ : Env Env -> Env [id: nil assoc comm prec 50] .
-    ---ceq A1 E1 = E1 
-    ---    if occurs(A1,E1) =/= nil .
-    ---op occurs : Assign Env -> Env .
-    ---eq occurs(A1,nil) = nil .
-    ---eq occurs(A1, A1 E1) = A1 .
-    ---ceq occurs(A1, A2 E1) = occurs(A1, E1)
-    ---    if A1 =/= A2 .
-    --- ao usar ele não corre e sai do maude
+    subsort Assign < Env .
+
+    op _ _ : Env Env -> Env [comm assoc id: nil prec 50] .
+    eq A1 A1 E1 = A1 E1 . --- idempotencia
     --- prec mais baixo = thighter binding (ver manual de maude cap 3.9)
     --- como '_:_' é mais baixo que '_ _' (default é 41), parenthesis não são obrigatórios
     --- podia ser _,_ mas n sei se um char a mais compensava a readability
@@ -95,13 +83,13 @@ fmod STLC is
     vars A1 A2 : Assign .
     vars N1 N2 N3 : NzNat .
     sort Pair .
-    op pair : PPair NzNat -> Pair .
+    op pair : PPair NzNat -> Pair . --- par para ter em conta os numeros dos tipos, é auxiliar
     op errorp : -> Pair .
 
     op p : Env Type -> PPair [format (g! o)] .
     op error : -> PPair . --- erro do PPair 
 
----(
+---( --- EXEMPLOS
     inference(lambda "x" app "x" "x") ok
     inference(lambda "x" lambda "y" "x") ok
     inference(lambda "x" lambda "y" "y") ok
@@ -114,10 +102,15 @@ fmod STLC is
     S = lambda "x" lambda "y" lambda "z" app app "x" "z" app "y" "z"
 )    
 
+    --- milner's type-inference
+    op inference : Term -> PPair .
+    eq inference(T1) = inference'(inference(T1,1)) .
 
-
+    op inference' : Pair -> PPair .
+    eq inference'(pair(p(E1,TYPE1),N1)) = p(E1,TYPE1) .
+    eq inference'(errorp) = error .
+    
     --- inference com numeros
-
     op inference : Term NzNat -> Pair . 
     eq inference(X1, N1) = pair(p(X1 : t(N1), t(N1)), N1) .
     ceq inference(app T1 T2, N1) = compute1'(inference(T1, N1), T2, intersect(freeVar(T1), freeVar(T2)))
@@ -131,21 +124,20 @@ fmod STLC is
     op compute1 : Pair Pair Term -> Pair .
     eq compute1(pair(p(E1,TYPE1), N1),pair(p(E2,TYPE2),N2), VARS) = compute2(unify(computeA(E1,E2,VARS,nil) TYPE1 = TYPE2 --> t(N2 + 1), nil), E1, E2, t(N2 + 1), N2 + 1) .
 
-
     op compute2 : SetOfConstraint Env Env Type NzNat -> Pair .
     eq compute2(nil, E1, E2, TYPE1, N1) = pair(p(E1 E2, TYPE1),N1) .
-    eq compute2(fail, E1, E2, TYPE1, N1) = errorp . --- unificação falhou
+    eq compute2(fail, E1, E2, TYPE1, N1) = errorp . --- caso unificação falhe
     ceq compute2(S1, E1, E2, TYPE1, N1) = pair(p(applyE'(S1, E1 E2), applyT(S1,TYPE1)),N1)
         if S1 =/= nil /\ S1 =/= fail .
 
-
+    --- caso de abstração no algoritmo
     op computeL : Var Pair -> Pair .
     eq computeL(X1, errorp) = errorp .
     ceq computeL(X1, pair(p(E1,TYPE1),N1)) = pair(p(E1, t(N1 + 1) --> TYPE1), N1 + 2)
-        if dom(X1,E1) == nil .
+        if dom(X1,E1) == nilA .
     eq computeL(X1, pair(p(E1,TYPE1),N1)) = pair(p(excludeE(E1,dom(X1,E1)), rg(dom(X1,E1)) --> TYPE1),N1) .
 
-
+    --- aplicar a tsub em todos os elementos do env
     op applyE' : SetOfConstraint Env -> Env .
     eq applyE'(nil, E1) = E1 . 
     eq applyE'(V1 = TYPE1 S1, E1) = applyE'(S1, (applyE''(V1 = TYPE1, E1, nil))) .
@@ -154,7 +146,11 @@ fmod STLC is
     eq applyE''(C1, nil, E2) = E2 .
     eq applyE''(V1 = TYPE1, X1 : TYPE2 E1, E2) = applyE''(V1 = TYPE1, E1, X1 : tsub(TYPE2,TYPE1,V1) E2) .
 
-    --- milner's type-inference
+
+---( --- DEPRECATED
+
+    --- SEM NUMEROS NOS TYPES
+    --- TAMBEM applyE não está correto, APESAR DE TER FUNCIONADO BEM COM OS CONBINADORES E OUTROS EXEMPLOS, luckly i guess
     op inference : Term -> PPair . 
 
     eq inference(X1) = p(X1 : t(X1), t(X1)) .
@@ -167,55 +163,7 @@ fmod STLC is
     ceq computeL(X1, p(E1,TYPE1)) = p(E1, t(X1) --> TYPE1)
         if dom(X1,E1) == nil .
     eq computeL(X1, p(E1,TYPE1)) = p(excludeE(E1,dom(X1,E1)), rg(dom(X1,E1)) --> TYPE1) .
-    
-    op excludeE : Env Assign -> Env .
-    eq excludeE(nil, A1) = nil .
-    eq excludeE(A1 E1, A1) = E1 .
-    ceq excludeE(A2 E1, A1) = excludeE(E1, A1) 
-        if A2 =/= A1 .
 
-    op intersect : Term Term -> Term .
-    eq intersect(nil, T1) = nil .
-    eq intersect(T1, nil) = nil .
-    eq intersect(X1 T1, X1 T2) = X1 intersect(T1, T2) .
-    eq intersect(T1, T2) = nil [owise] . --- otherwise
-
-    op rg : Assign -> Type . --- range, ex: rg(x:t1) -> t1
-    eq rg(X1 : TYPE1) = TYPE1 .
-
-    op nil : -> Assign . 
-
-    op dom : Var Env -> Assign .
-    eq dom(X1, nil) = nil .
-    ceq dom(X1, X2 : TYPE1 E1) = dom(X1, E1) 
-        if X1 =/= X2 .
-    eq  dom(X1, X1 : TYPE1 E1) = X1 : TYPE1 .
-
-    --- unecessary?
-    ---sort Vars .
-    ---subsort Var < Vars .
-    --- para defenir listas de variaveis, posso mudar o sort atual depois!
-    op _ _ : Term Term -> Term [comm assoc id: nil prec 50] .
-    eq X1 X1 T1 = X1 T1 . --- para ser idempotente (útil para freeVar e não dar erro)
-    --- eq X1 T1 X1 = X1 T1 . --- assim variaveis iguais não aparecem, como num conjunto
-    var VARS : Term .
-    op nil : -> Term . --- estou a usar muitos nil xD
-
-    op freeVar : Term -> Term .
-    eq freeVar(nil) = nil .
-    eq freeVar(X1) = X1 .
-    eq freeVar(app T1 T2) = freeVar(T1) freeVar(T2) .
-    eq freeVar(lambda X1 T1) = exclude(freeVar(T1),X1) .
-
-    ---eq idem : Term -> Term .
-    ---eq idem(X1 X2 T1) = 
-
-    op exclude : Term Var -> Term .
-    --- exclude(v1 v2 v3 v4, v2) -> v1 v3 v4
-    eq exclude(nil,X2) = nil .
-    eq exclude(X1 VARS, X1) = exclude(VARS, X1) .
-    ceq exclude(X1 VARS, X2) = X1 exclude(VARS, X2)
-        if X1 =/= X2 .
 
     op compute1 : PPair PPair Term Type -> PPair .
     eq compute1(p(E1,TYPE1),p(E2,TYPE2), VARS, TYPE3) = compute2(unify(computeA(E1,E2,VARS,nil) TYPE1 = TYPE2 --> TYPE3, nil), E1, E2, TYPE3) .
@@ -225,6 +173,62 @@ fmod STLC is
     eq compute2(fail, E1, E2, TYPE1) = error . --- caso de unificação falhar
     ceq compute2(S1, E1, E2, TYPE1) = p(applyE(S1, E1 E2, nil), applyT(S1,TYPE1))
         if S1 =/= nil /\ S1 =/= fail .
+    
+
+    --- este operador está mal feito em geral, ele apenas aplica uma vez no primeiro, não deve dar mal apenas com o contador
+    op applyE : SetOfConstraint Env Env -> Env .
+    eq applyE(S1, nil, E2) = E2 .
+    eq applyE(nil, E1, E2) = E1 E2 . 
+    eq applyE(V1 = TYPE1 S1, X1 : TYPE2 E1, E2) = applyE(S1, E1, X1 : tsub(TYPE2,TYPE1,V1) E2) .
+
+)
+
+    --- excluir um Assign do Env 
+    op excludeE : Env Assign -> Env .
+    eq excludeE(nil, A1) = nil .
+    eq excludeE(A1 E1, A1) = E1 .
+    ceq excludeE(A2 E1, A1) = excludeE(E1, A1) 
+        if A2 =/= A1 .
+
+    --- interseção das listas de variáveis
+    op intersect : Term Term -> Term .
+    eq intersect(nil, T1) = nil .
+    eq intersect(T1, nil) = nil .
+    eq intersect(X1 T1, X1 T2) = X1 intersect(T1, T2) .
+    eq intersect(T1, T2) = nil [owise] . --- otherwise
+
+    op rg : Assign -> Type . --- range, ex: rg("x":"t1") -> "t1"
+    eq rg(X1 : TYPE1) = TYPE1 .
+
+    op nilA : -> Assign . --- tem que ser nilA senão nil com nil do Env entra em ciclo e breaks
+
+    --- dom (domain) secalhar não é um bom nome, ex: dom("x", "y":"t1" "x":"t2"-->"t3" "c":"t2") = "x":"t2"-->"t3"
+    op dom : Var Env -> Assign .
+    eq dom(X1, nil) = nilA .
+    ceq dom(X1, X2 : TYPE1 E1) = dom(X1, E1) 
+        if X1 =/= X2 .
+    eq  dom(X1, X1 : TYPE1 E1) = X1 : TYPE1 .
+
+    --- para defenir listas de variaveis
+    op _ _ : Term Term -> Term [comm assoc id: nil prec 50] .
+    eq X1 X1 T1 = X1 T1 . --- para ser idempotente (útil para freeVar e não dar erro)
+    var VARS : Term .
+    op nil : -> Term . --- estou a usar muitos nil xD
+
+    --- fv nos termos, o resultado é uma lista de termos que são vars ex: freeVar(lambda "x" app "y" app "x" "z") = "y" "z"
+    op freeVar : Term -> Term .
+    eq freeVar(nil) = nil .
+    eq freeVar(X1) = X1 .
+    eq freeVar(app T1 T2) = freeVar(T1) freeVar(T2) .
+    eq freeVar(lambda X1 T1) = exclude(freeVar(T1),X1) .
+
+    --- excluir uma var da lista
+    op exclude : Term Var -> Term .
+    --- exclude(v1 v2 v3 v4, v2) -> v1 v3 v4
+    eq exclude(nil,X2) = nil .
+    eq exclude(X1 VARS, X1) = exclude(VARS, X1) .
+    ceq exclude(X1 VARS, X2) = X1 exclude(VARS, X2)
+        if X1 =/= X2 .
 
     --- o meu A é constraint onde tipos das fv(T1 T2) são iguais
     --- (ver o ponto 2 no Milner's type-inference algorithm FLP) 
@@ -233,34 +237,26 @@ fmod STLC is
     eq computeA(E1, E2, nil, S1) = S1 .
     ceq computeA(E1, E2, X1 T1, S1) = computeA(E1, E2, T1, rg(dom(X1,E1)) = rg(dom(X1,E2)) S1)
         if dom(X1,E1) =/= nil /\ dom(X1,E2) =/= nil .
-    --- não sei se está bem.... mas agora já não dá loop
     ceq computeA(E1, E2, X1 T1, S1) = computeA(E1, E2, T1, S1)
         if dom(X1,E1) == nil . 
     ceq computeA(E1, E2, X1 T1, S1) = computeA(E1, E2, T1, S1)
         if dom(X1,E2) == nil . 
-    ---eq computeA(E1 (X1 : TYPE1) E2, E3 (X1 : TYPE2) E4, X1 T1, S2) = computeA(E1 E2, E3 E4, T1, TYPE1 = TYPE2 S2) .
 
+    --- aplicar substituição nos tipos todos
     op applyT : SetOfConstraint Type -> Type .
     eq applyT(nil, TYPE1) = TYPE1 .
     eq applyT(V1 = TYPE1 S1, TYPE2) = applyT(S1, tsub(TYPE2, TYPE1, V1)) .
 
-
-    --- este operador está mal feito em geral, ele apenas aplica uma vez no primeiro, não deve dar mal apenas com o contador
-    op applyE : SetOfConstraint Env Env -> Env .
-    eq applyE(S1, nil, E2) = E2 .
-    eq applyE(nil, E1, E2) = E1 E2 . 
-    eq applyE(V1 = TYPE1 S1, X1 : TYPE2 E1, E2) = applyE(S1, E1, X1 : tsub(TYPE2,TYPE1,V1) E2) .
-
+    --- type susbtitution
     op tsub : Type Type TypeVar -> Type .
     --- tsub(o,t,p) -> o[t/p]
-
     eq tsub(V1, TYPE1, V1) = TYPE1 .
     ceq tsub(V2, TYPE1, V1) = V2
         if V2 =/= V1 .
     eq tsub((TYPE2 --> TYPE3), TYPE1, V1) = tsub(TYPE2, TYPE1, V1) --> tsub(TYPE3, TYPE1, V1) .
 
----(
-    exemplos:
+---( exemplos :
+    
     tsub("t1" --> "t3", "t2" --> "t1", "t3") = "t1" --> "t2" --> "t1"
     tsub("t1" --> "t2" --> "t1", "t3" --> "t4", "t1") = ("t3" --> "t4") --> "t2" --> "t3" --> "t4"
     tsub("t1" --> "t2" --> "t1", "t3" --> "t4", "t2") = "t1" --> ("t3" --> "t4") --> "t1"
@@ -272,8 +268,8 @@ fmod STLC is
     op _=_ : Type Type -> Constraint .
     op nil : -> Constraint . --- poderia fazer nil um sort próprio ....
     op _ _ : SetOfConstraint SetOfConstraint -> SetOfConstraint [assoc id: nil prec 50] .
-    --- can not be Constraint Constraint if so more thant two is kind!
 
+    --- type susbtitution in constraints
     op tsubcons : SetOfConstraint Type TypeVar -> SetOfConstraint .
     --- tsubcons(t1=t2, t, a) -> (t1=t2)[t/a]
     eq tsubcons(nil, TYPE1, V1) = nil .
