@@ -1,0 +1,19 @@
+st.maude comentei `subsorts String < TypeVar .` e já funciona, ver melhor a razão!!!
+eu acho que é por ser ambos o least sort uma String e de certa maneira faz confusão em que regra usar a dos Terms ou TypeVars ...
+
+Advisory: redefining module POLY.
+Warning: "poly.maude", line 52 (fmod POLY): declaration of identity null for operator __ clashes with previously declared identity (
+    nil).Term in "st.maude", line 213 (fmod ST).
+Maude> load st.maude
+Advisory: redefining module ST.
+Maude> load poly.maude
+Advisory: redefining module POLY.
+Maude> red except(t(2) , t(1)) .
+reduce in POLY : except(t(2), t(1)) .
+rewrites: 3 in 0ms cpu (0ms real) (~ rewrites/second)
+result TypeVar: t(2)
+Maude>
+
+
+
+

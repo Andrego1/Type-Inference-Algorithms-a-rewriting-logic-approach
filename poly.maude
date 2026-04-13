@@ -1,5 +1,5 @@
 fmod POLY is
-    extending STLC . --- verifcar se este tipo de importação é o mais correto
+    including ST . --- verifcar se este tipo de importação é o mais correto
 
     sort TypeScheme .
     subsort Type < TypeScheme .
@@ -21,26 +21,85 @@ fmod POLY is
 
 
     op _:_ : Var TypeScheme -> Assign [format(o g o o)] . --- type < typescheme
+    op nilA : -> Assign .
 
-    ---sort Types .
-    ---subsort Type < Types .
-    ---op _,_ : Type Type -> Type [comm assoc id: nil prec 50] .
-    ---eq V1 V1 TYPE1 = V1 TYPE1 . --- para ser idempotente (útil para freeVar e não dar erro)
-    ---var TYPES : Type .
-    ---op null : -> Type . --- estava a usar muitos nil, Warning: sort declarations for constant nil do not have an unique least sort.
-    
+    op rg : Assign -> TypeScheme . --- range, ex: rg(x:t1) -> t1
+    eq rg(X1 : TS1) = TS1 .
+
+    op dom : Var Env -> Assign .
+    eq dom(X1, nil) = nilA .
+    ceq dom(X1, X2 : TS1 E1) = dom(X1, E1) 
+        if X1 =/= X2 .
+    eq  dom(X1, X1 : TS1 E1) = X1 : TS1 .
+
+    --- este nao sei se era necessario redefenir, VERIFICAR!
+    op applyT : SetOfConstraint TypeScheme -> TypeScheme .
+    eq applyT(nil, TS1) = TS1 .
+    eq applyT(V1 = TS1 S1, TS2) = applyT(S1, tsub(TS2, TS1, V1)) .
+
+    --- este nao sei se era necessario redefenir, VERIFICAR!
+    op tsub : TypeScheme TypeScheme TypeVar -> TypeScheme .
+    --- tsub(o,t,p) -> o[t/p]
+    eq tsub(V1, TS1, V1) = TS1 .
+    ceq tsub(V2, TS1, V1) = V2
+        if V2 =/= V1 .
+    eq tsub((TS2 --> TS3), TS1, V1) = tsub(TS2, TS1, V1) --> tsub(TS3, TS1, V1) .
+
+
+    --- set of type variables, used for closure
+    sort TypeVars .
+    subsort TypeVar < TypeVars .
+    vars TVARS1 TVARS2 : TypeVars .
+    op _ _ : TypeVars TypeVars -> TypeVars [assoc comm id: nil prec 50] .
+    eq V1 V1 TVARS1 = V1 TVARS1 .
+    op nil : -> TypeVars .
+
+    --- sort do resultado
     sort WPair .
     op wpair : SetOfConstraint TypeScheme NzNat -> WPair .
 
-    --- ATENCAO QUE NAO TESTEI EXEMPLOS para o w 
+    --- ATENCAO
+    --- testei poucos exemplo para o caso 1) e nenhum nos restantes que fiz!
 
     --- algoritmo w
     op w : Env Term NzNat -> WPair .
-    eq w(E1, X1, N1) = compute(rg(dom(X1,E1)), N1, nil) .
+    ceq w(E1, X1, N1) = compute(rg(dom(X1,E1)), N1, nil) 
+        if dom(X1,E1) =/= nilA .
     eq w(E1, app T1 T2, N1) = compute1(w(E1,T1,N1),T2,E1) .
-    eq w(E1, lambda X1 T1, N1) = computeL(w(E1 X1 : t(N1), T1, N1 + 1), N1) .
-    
-    
+    eq w(E1, lambda X1 T1, N1) = computeL(w(excludeE(E1,dom(X1,E1)) X1 : t(N1), T1, N1 + 1), N1) .
+    eq w(E1, let X1 = T1 in T2, N1) = compute1'(w(E1,T1,N1), T2, E1, X1) .
+
+    --- auxiliares para caso 4)
+    op compute1' : WPair Term Env Var -> WPair .
+    eq compute1'(wpair(S1,TS1,N1), T2, E1, X1) = compute2'(wpair(S1,TS1,N1), w(applyE'(S1,E1) X1 : closure(applyE'(S1,E1), TS1, typevars(TS1), nil), T2, N1 + 1 )) .
+    --- VERIFICAR SE TENHO DE MUDAR AS funções PARA TYPESHCEME! ou então tá bem assim
+
+    op compute2' : WPair WPair -> WPair .
+    eq compute2'(wpair(S1,TS1,N1), wpair(S2,TS2,N2)) = wpair(S1 S2, TS2, N2) .
+
+    op closure : Env Type TypeVars TypeVars -> TypeScheme .
+    eq closure(nil, TYPE1, TVARS1, TVARS2) = closure'(TYPE1, except(TVARS1,TVARS2)) .
+    ceq closure((X1 : TYPE2) E1, TYPE1, TVARS1, TVARS2) = closure(E1, TYPE1, TVARS1, typevars(TYPE2) TVARS2)
+        if TYPE2 =/= TYPE1 .
+    ceq closure((X1 : TYPE2) E1, TYPE1, TVARS1, TVARS2) = closure(E1, TYPE1, TVARS1, TVARS2)
+        if TYPE1 == TYPE2 .
+
+    op closure' : Type TypeVars -> TypeScheme .
+    eq closure' (TYPE1, nil) = TYPE1 .
+    eq closure' (TYPE1, V1 TVARS1) = forall V1 closure'(TYPE1, TVARS1) .
+
+    op typevars : Type -> TypeVars .
+    eq typevars(V1) = V1 .
+    eq typevars(V1 --> TYPE1) = V1 typevars(TYPE1) .
+    eq typevars(TYPE1 --> TYPE2) = typevars(TYPE1) typevars(TYPE2) .
+
+    --- exceto de typevars
+    op except : TypeVars TypeVars -> TypeVars .
+    eq except(nil, TVARS1) = nil .
+    eq except(TVARS1, nil) = TVARS1 .
+    eq except(V1 TVARS1, V1 TVARS2) = except(TVARS1, TVARS2) .
+    ceq except(V1 TVARS1, V2 TVARS2) = V1 except(TVARS1, TVARS2) 
+        if V1 =/= V2 .
 
     --- auxiliar para caso 3)
     op computeL : WPair NzNat -> WPair .
@@ -48,20 +107,21 @@ fmod POLY is
 
     --- auxiliares para caso 2)
     op compute1 : WPair Term Env -> WPair .
-    eq compute1(wpair(S1, TS1, N1), T2,E1) = compute2(wpair(S1, TS1, N1), w(applyE'(S1,E1), TS1, N1)) .
+    eq compute1(wpair(S1, TS1, N1), T2,E1) = compute2(wpair(S1, TS1, N1), w(applyE'(S1,E1), T2, N1)) .
 
     op compute2 : WPair WPair -> WPair .
     eq compute2(wpair(S1, TS1, N1), wpair(S2, TS2, N2)) = compute3(wpair(S1, TS1, N1), wpair(S2, TS2, N2), unify(applyT(S2, TS1) = TS2 --> t(N2), nil)) .
 
     op compute3 : WPair WPair SetOfConstraint -> WPair .
     eq compute3(wpair(S1, TS1, N1), wpair(S2, TS2, N2), S3) = wpair(S1 S2 S3, applyT(S3, t(N2)), N2 + 1) .
-    --- dúvida com a composição do S1 S2 S3, estando nesta ordem resulta?
-
+    --- dúvida com a composição do S1 S2 S3, estando nesta ordem resulta como composição? 
+    --- eu acho que aplica primeiro os de S1 depois S2 e no final S3 isto é S3(S2(S1(a)))
 
     --- auxiliar para caso 1)
     op compute : TypeScheme NzNat SetOfConstraint -> WPair .
-    eq compute(forall V1 TS1, N1, S1) = compute(TS1, N1 + 1, t(N1) = V1 S1) .
-    eq compute(TYPE1, N1, S1) = wpair(nil, applyT(S1, TYPE1), N1)  . --- lembrar que applyT : SetOfConstraint Type -> Type
+    eq compute(forall V1 TS1, N1, S1) = compute(TS1, N1 + 1, V1 = t(N1) S1) .
+    eq compute(TYPE1, N1, S1) = wpair(nil, applyT(S1, TYPE1), N1)  . 
+    --- lembrar que applyT : SetOfConstraint Type -> Type, acho que não tem problema apenas ser Type neste caso, VERIFICAR!
 
-
+    
 endfm

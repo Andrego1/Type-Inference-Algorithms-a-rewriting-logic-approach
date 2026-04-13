@@ -59,9 +59,17 @@ lambda "x" lambda "y" app app "y" lambda "z" app app "z" "x" "x" "x"
 lambda "x" lambda "y" app app "x" "y" lambda "z" app "y" "z"
 :t \x -> \y ->  (x y) (\z -> (y z))
 
+
 # Examples for POLY
 
-let "i" = lambda "x" app "x" "y" in app "i" "i"
+let "i" = lambda "x" app "x" in app "i" "i" 
+OK
+
+let "x" = lambda "z" lambda "y" app app "z" "y" "y" in app "x" "x" 
+UNIFICATION FAILS
+
+w(nil, let "k" = lambda "z" lambda "w" app "z" "w" in lambda "z" app "z" app "k" "k", 1)
+OK
 
 red w(x(1) : forall "x1" forall "x2" "x1", x(1), 1) .
 
