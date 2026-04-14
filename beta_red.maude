@@ -1,5 +1,5 @@
 fmod BETA_RED is
-    including LAMBDA .
+    including ST .
 
     vars T1 T2 T3 : Term . 
     var X1 X2 : Var .
@@ -14,28 +14,18 @@ fmod BETA_RED is
     --- parece-me que está bem
     --- atenção que estou a assumir que não existe problema com captura de variáveis 
     eq sub(X1, X1, T1) = T1 .
-    ceq sub(X1, X2, T1) = X1 if X1 =/= X2 . --- ceq necessario?
-    eq sub(app(T1, T2), X1, T3) = app(sub(T1, X1, T3), sub(T2, X1, T3)) .
-    ceq sub(lambda(X1, T1), X2, T2) = lambda(X1, T1) if X1 == X2 . --- ceq necessario?
-    ceq sub(lambda(X1, T1), X2, T2) = lambda(X1, sub(T1, X2, T2)) if X1 =/= X2 .
+    ceq sub(X1, X2, T1) = X1 if X1 =/= X2 . 
+    --- com o último exemplo ainda não está bem
+    --- eu acho que a última regra não combina com um eventual r sub(...) da anterior
+    eq sub((app T1 T2), X1, T3) = (app sub(T1, X1, T3) sub(T2, X1, T3)) .
+    ceq sub((lambda X1 T1), X2, T2) = (lambda X1 T1) if X1 == X2 .
+    ceq sub((lambda X1 T1), X2, T2) = (lambda X1 sub(T1, X2, T2)) if X1 =/= X2 .
 
     --- estava a tentar fazer redução aqui, faço com rl ou eq?
     --- ainda não está bem
 
     --- ordem normal: reduzir o b-redex mais à esquerda e mais exterior
     eq r X1 = X1 .
-    eq r lambda(X1, T1) = lambda(X1, r T1) . 
-    eq r app(lambda(X1, T1), T2) = sub(T1, X1, T2) . 
-    eq r app(T1, T2) = if T1 =/= r T1 then r app(r T1, T2) else app(T1, r T2) fi .
-    
-    --- com o último exemplo ainda não está bem
-    --- eu acho que a última regra não combina com um eventual r sub(...) da anterior
-
-    --- outras formas de escrfevre (apenas mudei formato dos constroctures)
-    eq sub((app T1 T2), X1, T3) = (app sub(T1, X1, T3) sub(T2, X1, T3)) .
-    ceq sub((lambda X1 T1), X2, T2) = (lambda X1 T1) if X1 == X2 . --- ceq necessario?
-    ceq sub((lambda X1 T1), X2, T2) = (lambda X1 sub(T1, X2, T2)) if X1 =/= X2 .
-
     eq r (lambda X1 T1) = lambda X1 r T1 . 
     eq r (app (lambda X1 T1) T2) = sub(T1, X1, T2) . 
     eq r (app T1 T2) = if T1 =/= r T1 then r (app r T1 T2) else (app T1 r T2) fi .
