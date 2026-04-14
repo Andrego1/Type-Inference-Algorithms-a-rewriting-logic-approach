@@ -21,7 +21,7 @@ fmod POLY is
 
 
     op _:_ : Var TypeScheme -> Assign [format(o g o o)] . --- type < typescheme
-    op nilA : -> Assign .
+    ---op nilA : -> Assign .
 
     op rg : Assign -> TypeScheme . --- range, ex: rg(x:t1) -> t1
     eq rg(X1 : TS1) = TS1 .
@@ -58,8 +58,6 @@ fmod POLY is
     sort WPair .
     op wpair : SetOfConstraint TypeScheme NzNat -> WPair .
 
-    --- ATENCAO
-    --- testei poucos exemplo para o caso 1) e nenhum nos restantes que fiz!
 
     --- algoritmo w
     op w : Env Term NzNat -> WPair .
@@ -116,6 +114,7 @@ fmod POLY is
     eq compute3(wpair(S1, TS1, N1), wpair(S2, TS2, N2), S3) = wpair(S1 S2 S3, applyT(S3, t(N2)), N2 + 1) .
     --- dúvida com a composição do S1 S2 S3, estando nesta ordem resulta como composição? 
     --- eu acho que aplica primeiro os de S1 depois S2 e no final S3 isto é S3(S2(S1(a)))
+    --- como é suposto
 
     --- auxiliar para caso 1)
     op compute : TypeScheme NzNat SetOfConstraint -> WPair .

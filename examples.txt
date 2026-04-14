@@ -1,4 +1,4 @@
-# Examples for STLC module
+# Examples for ST module
 
 ## Operator lambda & app 
 
@@ -62,7 +62,7 @@ lambda "x" lambda "y" app app "x" "y" lambda "z" app "y" "z"
 
 # Examples for POLY
 
-let "i" = lambda "x" app "x" in app "i" "i" 
+let "i" = lambda "x" "x" in app "i" "i" 
 OK
 
 let "x" = lambda "z" lambda "y" app app "z" "y" "y" in app "x" "x" 
@@ -80,3 +80,16 @@ ghci> let x = 1
 ghci> let y = 2
 ghci> :t x y
 os tipos foram do mesmo genero
+
+
+# Examples for STLC
+
+lambda "x" : t(1) "x"
+
+lambda "x" : t(1) lambda "y" : t(2) "x"
+
+lambda "x" : t(1) lambda "y" : t(2) "y"
+
+app lambda "x" : t(1) "x" lambda "x" : t(2) "x" 
+error que é correto
+

@@ -1,0 +1,39 @@
+fmod STLC is
+
+    including ST . --- verificar se este tipo de importação é o mais correto
+
+    vars TYPE1 TYPE2 TYPE3 TYPE4 : Type .
+    vars V1 V2 V3 : TypeVar . 
+    vars E1 E2 E3 E4 : Env .
+    vars A1 A2 : Assign .
+    vars N1 N2 N3 : NzNat .
+    vars T1 T2 T3 : Term . 
+    var X1 X2 : Var .
+    var S1 S2 S3 : SetOfConstraint .
+    var C1 : Constraint .
+
+    op lambda _:_ _ : Var Type Term -> Term .
+    --- church style
+
+    op error : -> Type . --- caso falhar
+
+
+    --- type check
+    op check : Env Term -> Type .
+    eq check(E1, X1) = checkVar(dom(X1,E1)) . 
+    eq check(E1, lambda X1 : TYPE1 T1) = checkLam(TYPE1,check(E1 X1 : TYPE1, T1)) .
+    eq check(E1, app T1 T2) = checkApp(check(E1, T1), check(E1, T2)) .
+
+    op checkApp : Type Type -> Type .
+    eq checkApp(TYPE1 --> TYPE2, TYPE1) = TYPE2 .
+    eq checkApp(TYPE1, TYPE2) = error [owise] .
+
+    op checkLam : Type Type -> Type .
+    eq checkLam(TYPE1, error) = error .
+    eq checkLam(TYPE1, TYPE2) = TYPE1 --> TYPE2 .
+
+    op checkVar : Assign -> Type .
+    eq checkVar(nilA) = error .
+    eq checkVar(X1 : TYPE1) = TYPE1 .
+
+endfm
