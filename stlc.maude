@@ -18,11 +18,26 @@ fmod STLC is
     op error : -> Type . --- caso falhar
 
 
-    --- type check
+    --- type check?
+    --- é basicamente a mesma coisa, não?
+    op check : Env Term Type -> Bool .
+    eq check(E1, X1, TYPE1) = rg(dom(X1,E1)) == TYPE1 .
+    eq check(E1, lambda X1 : TYPE1 T1, TYPE1 --> TYPE3) = check(E1 X1 : TYPE1, T1, TYPE3) .
+    eq check(E1, app T1 T2, TYPE1) = TYPE1 == checkApp(check(E1, T1), check(E1, T2)) .
+    --- eu tenho de inferir o tipo de pelo menos de um....
+    eq check(E1, T1, TYPE1) = false [owise] .
+
+
+    --- type check ? ou type assignment ?
     op check : Env Term -> Type .
     eq check(E1, X1) = checkVar(dom(X1,E1)) . 
     eq check(E1, lambda X1 : TYPE1 T1) = checkLam(TYPE1,check(E1 X1 : TYPE1, T1)) .
     eq check(E1, app T1 T2) = checkApp(check(E1, T1), check(E1, T2)) .
+    eq check(E1, let X1 = T1 in T2) = checkLet(check(E1, T1), T2, X1, E1) .
+
+    op checkLet : Type Term Var Env -> Type .
+    eq checkLet(error, T2, V1, E1) = error .
+    eq checkLet(TYPE1, T2, V1, E1) = check(E1 X1 : TYPE1, T2) .
 
     op checkApp : Type Type -> Type .
     eq checkApp(TYPE1 --> TYPE2, TYPE1) = TYPE2 .
@@ -35,5 +50,8 @@ fmod STLC is
     op checkVar : Assign -> Type .
     eq checkVar(nilA) = error .
     eq checkVar(X1 : TYPE1) = TYPE1 .
+
+    op typeCheck : Env Term Type -> Bool . --- ok?
+    eq typeCheck(E1, T1, TYPE1) = if check(E1, T1) == TYPE1 then true else false fi .
 
 endfm

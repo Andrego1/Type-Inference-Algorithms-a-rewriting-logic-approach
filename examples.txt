@@ -93,3 +93,5 @@ lambda "x" : t(1) lambda "y" : t(2) "y"
 app lambda "x" : t(1) "x" lambda "x" : t(2) "x" 
 error que é correto
 
+
+lambda "x" : t(3) --> t(2) --> t(1) lambda "y" : t(3) --> t(2) lambda "z" : t(3) app app "x" "z" app "y" "z"
