@@ -104,9 +104,9 @@ fmod ST is
 
     --- milner's type-inference
     op inference : Term -> PPair .
-    eq inference(T1) = inference'(inference(T1,1)) .
+    eq inference(T1) = inference'(inference(T1,1)) . --- n é necessário escrever número assim
 
-    op inference' : Pair -> PPair .
+    op inference' : Pair -> PPair . --- obter apenas principal pair
     eq inference'(pair(p(E1,TYPE1),N1)) = p(E1,TYPE1) .
     eq inference'(errorp) = error .
     
@@ -152,7 +152,6 @@ fmod ST is
     --- SEM NUMEROS NOS TYPES
     --- TAMBEM applyE não está correto, APESAR DE TER FUNCIONADO BEM COM OS CONBINADORES E OUTROS EXEMPLOS, luckly i guess
     op inference : Term -> PPair . 
-
     eq inference(X1) = p(X1 : t(X1), t(X1)) .
     ceq inference(app T1 T2) = compute1(inference(T1), inference(T2), intersect(freeVar(T1), freeVar(T2)), t(app T1 T2))
         if inference(T1) =/= error /\ inference(T2) =/= error .
