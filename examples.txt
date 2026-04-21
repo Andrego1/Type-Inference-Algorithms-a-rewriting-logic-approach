@@ -71,11 +71,11 @@ UNIFICATION FAILS
 w(nil, let "k" = lambda "z" lambda "w" app "z" "w" in lambda "z" app "z" app "k" "k", 1)
 OK
 
-red w(x(1) : forall "x1" forall "x2" "x1", x(1), 1) .
+red w(x(1) : forall t(2) forall t(3) t(2), x(1), 1) .
 
 red w(nil, lambda "x" "x", 1) .
 
-red w("x" : forall "x1" "x1" "y" : forall "y1" "y1", app "x" "y", 1) .
+red w("x" : forall t(1) t(1) "y" : forall t(2) t(2), app "x" "y", 1) .
 ghci> let x = 1
 ghci> let y = 2
 ghci> :t x y
