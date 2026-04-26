@@ -81,7 +81,8 @@ fmod POLY is
     eq compute2'(wpair(S1,TS1,N1), wpair(S2,TS2,N2)) = wpair(S1 S2, TS2, N2) .
 
     op closure : Env TypeScheme TypeVars TypeVars -> TypeScheme .
-    eq closure(nil, TS1, TVARS1, TVARS2) = closure'(TS1, except(TVARS1,TVARS2)) .
+    eq closure(nil, TS1 --> TS2, TVARS1, TVARS2) = closure'(TS1 --> TS2, except(TVARS1,TVARS2)) .
+    eq closure(nil, TS1, TVARS1, TVARS2) = closure'(TS1, nil) . --- caso onde closure("x" : t(1), t(1), t(1), nil), sem ele era forall t(1) t(1) o que é errado
     ceq closure((X1 : TS2) E1, TS1, TVARS1, TVARS2) = closure(E1, TS1, TVARS1, typevars(TS2) TVARS2)
         if TS2 =/= TS1 .
     ceq closure((X1 : TS2) E1, TS1, TVARS1, TVARS2) = closure(E1, TS1, TVARS1, TVARS2)
