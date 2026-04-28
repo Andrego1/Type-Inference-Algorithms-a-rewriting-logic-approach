@@ -15,12 +15,12 @@ fmod POLY is
     var S1 S2 S3 : SetOfConstraint .
     var C1 : Constraint .
 
-    op forall _ _ : TypeVar TypeScheme -> TypeScheme [format (g o o o)] . --- quantificador universal
+    op forall _ _ : TypeVar TypeScheme -> TypeScheme [format (b! o o o)] . --- quantificador universal
 
-    op let _=_ in _ : Var Term Term -> Term [format (c o g o g o o)] .
+    op let _=_ in _ : Var Term Term -> Term [format (c o g! o g! o o)] .
 
 
-    op _:_ : Var TypeScheme -> Assign [format(o g o o)] . --- type < typescheme
+    op _:_ : Var TypeScheme -> Assign [format(o c! o o)] . --- type < typescheme
 
     op rg : Assign -> TypeScheme . --- range, ex: rg(x:t1) -> t1
     eq rg(X1 : TS1) = TS1 .
@@ -80,6 +80,7 @@ fmod POLY is
     op compute2' : WPair WPair -> WPair .
     eq compute2'(wpair(S1,TS1,N1), wpair(S2,TS2,N2)) = wpair(S1 S2, TS2, N2) .
 
+    --- VERIFICAR de novo, ao rever quando fiz último commit deu-me a etender que pode ainda dar asneira....
     op closure : Env TypeScheme TypeVars TypeVars -> TypeScheme .
     eq closure(nil, TS1 --> TS2, TVARS1, TVARS2) = closure'(TS1 --> TS2, except(TVARS1,TVARS2)) .
     eq closure(nil, TS1, TVARS1, TVARS2) = closure'(TS1, nil) . --- caso onde closure("x" : t(1), t(1), t(1), nil), sem ele era forall t(1) t(1) o que é errado

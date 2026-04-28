@@ -57,13 +57,13 @@ fmod ST is
     op t(_) : Term -> TypeVar . --- type, ex: t(lambda "x" "x"), ,t(app "x" "y") ....
 
     --- precisa de ser right associative, acho que está bem
-    op _ --> _ : Type Type -> Type [gather (e E) format(o y o o)] .
+    op _ --> _ : Type Type -> Type [gather (e E) format(o y! o o)] .
 
     sort Env . --- o gamma (ambiente/contexto)
     op nil : -> Env . 
 
     sort Assign .
-    op _:_ : Var Type -> Assign [format(o g o o)] . 
+    op _:_ : Var Type -> Assign [format(o g! o o)] . 
 
     subsort Assign < Env .
 
@@ -86,7 +86,7 @@ fmod ST is
     op pair : PPair NzNat -> Pair . --- par para ter em conta os numeros dos tipos, é auxiliar
     op errorp : -> Pair .
 
-    op p : Env Type -> PPair [format (g! o)] .
+    op p : Env Type -> PPair [format (m! o)] .
     op error : -> PPair . --- erro do PPair 
 
 ---( --- EXEMPLOS
