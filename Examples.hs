@@ -1,5 +1,32 @@
 module Examples where
 
+--- Exercices from "Notes on Foundations of Programming Languages Types"
+
+--- Combinators SKI
+s = \x y z -> x z (y z)
+
+k = \x y -> x
+
+i = \x -> x
+
+--- i think this could be interpreted as giving type for y
+ex1b = \x -> y where y = 1 
+
+ex1c = \x y -> x y y 
+
+ex2a = \x y z -> x (y z)
+
+ex2b = \x y z -> x y z
+
+ex2c = \x y z -> x z y
+
+ex3b = \x y -> (\z -> x) (y x)
+
+ex3c = \x y -> y (\z -> z x x) x
+
+ex3d = \x y -> x y (\z -> y z)
+
+
 --- Examples only for POLY module
 
 ex1 = let i = \x -> x in i
