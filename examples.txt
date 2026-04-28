@@ -8,6 +8,10 @@
 (lx.(ly.y)(lz.z)) = lambda "x" app lambda "y" "y" lambda "z" "z"
 ((lxy.xyx)(lxy.x))(lxy.y) = app app lambda "x" lambda "y" app app "x" "y" "x" lambda "x" lambda "y" "x" lambda "x" lambda "y" "y"
 
+
+################################################################
+
+
 ## Inference Examples
 
 inference(lambda "x" app "x" "x") 
@@ -28,7 +32,7 @@ ok, PPair: p(nil, t(4) --> t(2) --> t(2))
 inference(app lambda "x" lambda "y" app app "x" "y" "x" lambda "x" lambda "y" "x") 
 não dá, acho que está bem (ghci não dá tipo)
 
-COMBINADORES S,k,I:
+COMBINADORES S,K,I:
 I = lambda "x" "x"
 K = lambda "x" lambda "y" "x"
 S = lambda "x" lambda "y" lambda "z" app app "x" "z" app "y" "z"
@@ -60,7 +64,28 @@ lambda "x" lambda "y" app app "x" "y" lambda "z" app "y" "z"
 :t \x -> \y ->  (x y) (\z -> (y z))
 
 
-# Examples for POLY
+########################################################################
+
+
+### from FLP notes
+
+lambda "x" lambda "y" app app "x" "y" "y"
+
+lambda "x" lambda "y" lambda "z" app "x" app "y" "z"
+
+lambda "x" lambda "y" lambda "z" app app "x" "y" "z"
+
+lambda "x" lambda "y" lambda "z" app app "x" "z" "y"
+
+lambda "x" lambda "y" app lambda "z" "x" app "y" "z"
+
+lambda "x" lambda "y" app app "y" lambda "z" app app "z" "x" "x" "x"
+
+lambda "x" lambda "y" app app "x" "y" lambda "z" app "y" "z"
+
+#########################################################################
+
+# Examples ONLY for POLY 
 
 red w(nil, let "i" = lambda "x" "x" in "i", 1) .
 OK
@@ -69,6 +94,9 @@ red w(nil, lambda "x" let "y" = "x" in "y", 1) .
 OK
 
 red w(nil, let "i" = lambda "x" "x" in app "i" "i", 1) . 
+OK
+
+red w(nil, let "i" = lambda "x" let "y" = "x" in "y" in app "i" "i", 1)
 OK
 
 red w(nil, lambda "m" (let "y" = "m" in (let "x" = app "y" lambda "x" lambda "y" "x" in "x" )), 1) .
@@ -87,8 +115,10 @@ red w(nil, let "s" = lambda "x" lambda "y" lambda "z" app app "x" "z" app "y" "z
 OK
 
 red w(nil, app let "s" = lambda "x" lambda "y" lambda "z" app app "x" "z" app "y" "z" in let "k" = lambda "x" lambda "y" "x" in app "s" "k" lambda "x" lambda "y" lambda "z" app app "x" "z" app "y" "z", 1) .
-ok
+OK
 
+
+--- outros mais diferentes em que pensei
 red w("x" : forall t(1) t(1) "y" : forall t(2) t(2), app "x" "y", 1) .
 ghci> let x = 1
 ghci> let y = 2
@@ -96,6 +126,10 @@ ghci> :t x y
 os tipos foram do mesmo genero
 
 red w(x(1) : forall t(2) forall t(3) t(2), x(1), 1) .
+
+
+#########################################################################
+
 
 # Examples for STLC
 
