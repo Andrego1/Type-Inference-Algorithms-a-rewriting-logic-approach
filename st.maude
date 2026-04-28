@@ -57,7 +57,7 @@ fmod ST is
     op t(_) : Term -> TypeVar . --- type, ex: t(lambda "x" "x"), ,t(app "x" "y") ....
 
     --- precisa de ser right associative, acho que está bem
-    op _ --> _ : Type Type -> Type [gather (e E) format(o y! o o)] .
+    op _ --> _ : Type Type -> Type [gather (e E) format(o r! o o)] .
 
     sort Env . --- o gamma (ambiente/contexto)
     op nil : -> Env . 
