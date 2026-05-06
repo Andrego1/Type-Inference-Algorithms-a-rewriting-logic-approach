@@ -133,14 +133,18 @@ red w(x(1) : forall t(2) forall t(3) t(2), x(1), 1) .
 
 # Examples for CHECK
 
-lambda "x" : t(1) "x"
+red typeCheck(nil, lambda "x" : t(1) "x", t(1) --> t(1)) .
+OK
 
-lambda "x" : t(1) lambda "y" : t(2) "x"
+red typeCheck(nil, lambda "x" : t(1) lambda "y" : t(2) "x", t(1) --> t(2) --> t(1)) .
+OK
 
-lambda "x" : t(1) lambda "y" : t(2) "y"
+red typeCheck(nil, lambda "x" : t(3) --> t(2) --> t(1) lambda "y" : t(3) --> t(2) lambda "z" : t(3) app app "x" "z" app "y" "z", (t(3) --> t(2) --> t(1)) --> (t(3) --> t(2)) --> t(3) --> t(1)) .
+OK
 
-app lambda "x" : t(1) "x" lambda "x" : t(2) "x" 
-error que é correto
+red typeCheck(nil, lambda "x" : t(1) lambda "y" : t(2) "y", t(1) --> t(2) --> t(2)) .
+OK
 
+app lambda "x" : t(1) "x" lambda "x" : t(1) "x" 
+error o que acho que é correto
 
-lambda "x" : t(3) --> t(2) --> t(1) lambda "y" : t(3) --> t(2) lambda "z" : t(3) app app "x" "z" app "y" "z"

@@ -55,3 +55,8 @@ x = x
 
 a = let y = x x in y
 
+--- Tested ONLY for POLY
+
+e1 = \x y -> y
+
+e2 = (\x -> x) (\x -> x) --- error ....
