@@ -23,7 +23,7 @@ fmod CHECK is
     sort TyBool . --- type boolean para t e f
     subsort TyBool < Type .
 
-    op tyb : -> TyBool .
+    op tybool : -> TyBool .
 
     op error : -> Type . --- caso falhar
 
@@ -34,12 +34,12 @@ fmod CHECK is
     eq check(E1, app T1 T2) = checkApp(check(E1, T1), check(E1, T2)) .
     eq check(E1, let X1 = T1 in T2) = checkLet(check(E1, T1), T2, X1, E1) . --- poly
     eq check(E1, if T1 T2 T3) = checkIf(E1, check(E1, T1), T2, T3) .
-    eq check(E1, t) = tyb . --- type bool
-    eq check(E1, f) = tyb . --- type bool
+    eq check(E1, t) = tybool . --- type bool
+    eq check(E1, f) = tybool . --- type bool
 
     op checkIf : Env Type Term Term -> Type .
-    eq checkIf(E1, tyb, T1, T2) = checkIf'(check(E1, T1), check(E1, T2)) .
-    eq checkIf(E1, TYPE1, T1, T2) = error [owise] .
+    eq checkIf(E1, tybool, T1, T2) = checkIf'(check(E1, T1), check(E1, T2)) .
+    eq checkIf(E1, TYPE1, T1, T2)  = error [owise] .
 
     op checkIf' : Type Type -> Type .
     eq checkIf'(TYPE1, TYPE1) = TYPE1 .
@@ -51,14 +51,14 @@ fmod CHECK is
 
     op checkApp : Type Type -> Type .
     eq checkApp(TYPE1 --> TYPE2, TYPE1) = TYPE2 .
-    eq checkApp(TYPE1, TYPE2) = error [owise] .
+    eq checkApp(TYPE1, TYPE2)           = error [owise] .
 
     op checkLam : Type Type -> Type .
     eq checkLam(TYPE1, error) = error .
     eq checkLam(TYPE1, TYPE2) = TYPE1 --> TYPE2 .
 
     op checkVar : Assign -> Type .
-    eq checkVar(nilA) = error .
+    eq checkVar(nilA)       = error .
     eq checkVar(X1 : TYPE1) = TYPE1 .
 
     --- isto seria ok, como typecheck ?
