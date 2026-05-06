@@ -49,3 +49,9 @@ ex8 = let k = \x y -> x in (let w = \x y z -> x y z in k w w)
 ex9 = let s = \x y z -> x z (y z) in (let k = \a b -> a in (let i = \c -> c in s k i ))
 
 ex10 = (let s = \x y z -> x z (y z) in (let k = \a b -> a in s k )) (\x y z -> x z (y z))
+
+x :: forall a . a
+x = x
+
+a = let y = x x in y
+

@@ -1,6 +1,7 @@
 fmod STLC is
 
     including ST . --- verificar se este tipo de importação é o mais correto
+    including POLY .
 
     vars TYPE1 TYPE2 TYPE3 TYPE4 : Type .
     vars V1 V2 V3 : TypeVar . 
@@ -12,32 +13,41 @@ fmod STLC is
     var S1 S2 S3 : SetOfConstraint .
     var C1 : Constraint .
 
-    op lambda _:_ _ : Var Type Term -> Term .
+    op lambda _:_ _ : Var Type Term -> Term [format (b! o c! o o o)] .
     --- church style
 
+    op t : -> Term [format (g! o)] . --- true
+    op f : -> Term [format (r! o)] . --- false
+    op if _ _ _ : Term Term Term -> Term [format (c! o o o o)] . 
+
+    sort TyBool . --- type boolean para t e f
+    subsort TyBool < Type .
+
+    op tyb : -> TyBool .
+
     op error : -> Type . --- caso falhar
-
-
-    --- type check?
-    --- é basicamente a mesma coisa, não?
-    op check : Env Term Type -> Bool .
-    eq check(E1, X1, TYPE1) = rg(dom(X1,E1)) == TYPE1 .
-    eq check(E1, lambda X1 : TYPE1 T1, TYPE1 --> TYPE3) = check(E1 X1 : TYPE1, T1, TYPE3) .
-    eq check(E1, app T1 T2, TYPE1) = TYPE1 == checkApp(check(E1, T1), check(E1, T2)) .
-    --- eu tenho de inferir o tipo de pelo menos de um....
-    eq check(E1, T1, TYPE1) = false [owise] .
-
 
     --- type check ? ou type assignment ?
     op check : Env Term -> Type .
     eq check(E1, X1) = checkVar(dom(X1,E1)) . 
     eq check(E1, lambda X1 : TYPE1 T1) = checkLam(TYPE1,check(E1 X1 : TYPE1, T1)) .
     eq check(E1, app T1 T2) = checkApp(check(E1, T1), check(E1, T2)) .
-    eq check(E1, let X1 = T1 in T2) = checkLet(check(E1, T1), T2, X1, E1) .
+    eq check(E1, let X1 = T1 in T2) = checkLet(check(E1, T1), T2, X1, E1) . --- poly
+    eq check(E1, if T1 T2 T3) = checkIf(E1, check(E1, T1), T2, T3) .
+    eq check(E1, t) = tyb . --- type bool
+    eq check(E1, f) = tyb . --- type bool
 
-    op checkLet : Type Term Var Env -> Type .
-    eq checkLet(error, T2, V1, E1) = error .
-    eq checkLet(TYPE1, T2, V1, E1) = check(E1 X1 : TYPE1, T2) .
+    op checkIf : Env Type Term Term -> Type .
+    eq checkIf(E1, tyb, T1, T2) = checkIf'(check(E1, T1), check(E1, T2)) .
+    eq checkIf(E1, TYPE1, T1, T2) = error [owise] .
+
+    op checkIf' : Type Type -> Type .
+    eq checkIf'(TYPE1, TYPE1) = TYPE1 .
+    eq checkIf'(TYPE1, TYPE2) = error [owise] .
+
+    op checkLet : Type Term Var Env -> Type . --- poly
+    eq checkLet(error, T2, X1, E1) = error .
+    eq checkLet(TYPE1, T2, X1, E1) = check(E1 X1 : TYPE1, T2) .
 
     op checkApp : Type Type -> Type .
     eq checkApp(TYPE1 --> TYPE2, TYPE1) = TYPE2 .
@@ -51,7 +61,24 @@ fmod STLC is
     eq checkVar(nilA) = error .
     eq checkVar(X1 : TYPE1) = TYPE1 .
 
-    op typeCheck : Env Term Type -> Bool . --- ok?
-    eq typeCheck(E1, T1, TYPE1) = if check(E1, T1) == TYPE1 then true else false fi .
+    --- isto seria ok, como typecheck ?
+    op typeCheck : Env Term Type -> Bool . 
+    eq typeCheck(E1, T1, TYPE1) = check(E1, T1) == TYPE1 .
+
+
+
+    --- type check?
+    --- é basicamente a mesma coisa, não?
+    ---op check : Env Term Type -> Bool .
+    ---eq check(E1, X1, TYPE1) = rg(dom(X1,E1)) == TYPE1 .
+    ---eq check(E1, lambda X1 : TYPE1 T1, TYPE1 --> TYPE3) = check(E1 X1 : TYPE1, T1, TYPE3) .
+    ---eq check(E1, app T1 T2, TYPE1) = checkApp(E1, T1, TYPE1, check(E1, T2)) .
+    ------ eu tenho de inferir o tipo de pelo menos de um.... no app
+    ---eq check(E1, T1, TYPE1) = false [owise] .
+---
+    ---op checkApp : Env Term Type Type -> Bool .
+    ---eq checkApp(E1, T1, TYPE1, error) = false .
+    ---eq checkApp(E1, T1, error, TYPE2) = false . --- necessário?
+    ---eq checkApp(E1, T1, TYPE1, TYPE2) = check(E1, T1, TYPE2 --> TYPE1) .
 
 endfm
