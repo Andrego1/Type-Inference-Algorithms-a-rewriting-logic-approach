@@ -131,7 +131,7 @@ red w(x(1) : forall t(2) forall t(3) t(2), x(1), 1) .
 #########################################################################
 
 
-# Examples for STLC
+# Examples for CHECK
 
 lambda "x" : t(1) "x"
 

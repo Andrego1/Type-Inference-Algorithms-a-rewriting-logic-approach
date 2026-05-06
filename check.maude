@@ -1,4 +1,4 @@
-fmod STLC is
+fmod CHECK is
 
     including ST . --- verificar se este tipo de importação é o mais correto
     including POLY .
