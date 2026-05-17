@@ -1,0 +1,80 @@
+fmod SYSTEMF is
+
+    including ST .
+
+    op lambda _:_ _ : Var Type Term -> Term [format (c! o g! o o o)] .
+    --- church style
+
+    op lambdaT _ _ : TypeVar Term -> Term [format (m! o o o)] . 
+
+    --- o lambda defenido 2x no mesmo ficheiro causa problemas
+    --- pensa que pode aplicar tanto um como o outro, mas escolhe o correto, 
+    --- se o importar é ok
+
+    op app _ _ : Term Type -> Term .
+
+    op forall _ _ : TypeVar Type -> Type .
+
+    subsort TypeVar < Env . --- O ambiente pode ter typeVar no sytemF (ch23.3 pierce)
+    --- é necessário?
+
+    vars TYPE1 TYPE2 TYPE3 TYPE4 : Type .
+    vars TV1 TV2 TV3 : TypeVar . 
+    vars E1 E2 E3 E4 : Env .
+    vars A1 A2 : Assign .
+    vars N1 N2 N3 : NzNat .
+    vars T1 T2 T3 : Term . 
+    var X1 X2 : Var .
+    var S1 S2 S3 : SetOfConstraint .
+    var C1 : Constraint .
+
+    op error : -> Type . --- caso seja erro 
+
+    op dom : Var Env -> Assign .
+    eq dom(X1, nil) = nilA .
+    ceq dom(X1, X2 : TYPE1 E1) = dom(X1, E1) 
+        if X1 =/= X2 .
+    eq dom(X1, X1 : TYPE1 E1) = X1 : TYPE1 .
+    eq dom(X1, TV1 E1) = dom(X1, E1) . --- caso novo
+
+    --- verificar se é mesmo necessário!
+    op tsub : Type Type TypeVar -> Type .
+    --- tsub(o,t,p) -> o[t/p]
+    eq tsub(TV1, TYPE1, TV1) = TYPE1 .
+    ceq tsub(TV2, TYPE1, TV1) = TV2
+        if TV2 =/= TV1 . 
+    eq tsub((TYPE2 --> TYPE3), TYPE1, TV1) = tsub(TYPE2, TYPE1, TV1) --> tsub(TYPE3, TYPE1, TV1) .
+    ceq tsub(forall TV1 TYPE1, TYPE2, TV2) = forall TV1 tsub(TYPE1, TYPE2, TV2) 
+        if TV1 =/= TV2 .
+    eq tsub(forall TV1 TYPE1, TYPE2, TV1) = forall TV1 TYPE1 .
+
+    --- essencialmente o var,app,abs são iguais ao de CHECK
+    --- removi os if e let e fiz para T-ABS e T-APP 
+    op check : Env Term -> Type .
+    eq check(E1, X1) = checkVar(dom(X1,E1)) . --- devo ter de redefenir dom por causa de typevars no env
+    eq check(E1, lambda X1 : TYPE1 T1) = checkLam(TYPE1,check(E1 X1 : TYPE1, T1)) .
+    eq check(E1, app T1 T2) = checkApp(check(E1, T1), check(E1, T2)) .
+    eq check(E1, lambdaT TV1 T1) = forall TV1 check(E1 TV1, T1) . 
+    eq check(E1, app T1 TYPE1) = checkApp2(check(E1, T1), TYPE1) .
+
+    op checkApp2 : Type Type -> Type .
+    eq checkApp2(forall TV1 TYPE1, TYPE2) = tsub(TYPE1, TYPE2, TV1) .
+    eq checkApp2(TYPE1, TYPE2)            = error [owise] .
+
+    op checkApp : Type Type -> Type .
+    eq checkApp(TYPE1 --> TYPE2, TYPE1) = TYPE2 .
+    eq checkApp(TYPE1, TYPE2)           = error [owise] .
+
+    op checkLam : Type Type -> Type .
+    eq checkLam(TYPE1, error) = error .
+    eq checkLam(TYPE1, TYPE2) = TYPE1 --> TYPE2 .
+
+    op checkVar : Assign -> Type .
+    eq checkVar(nilA)       = error .
+    eq checkVar(X1 : TYPE1) = TYPE1 .
+
+
+    op typeCheckF : Env Term Type -> Bool . 
+    eq typeCheckF(E1, T1, TYPE1) = check(E1, T1) == TYPE1 .
+
+endfm
