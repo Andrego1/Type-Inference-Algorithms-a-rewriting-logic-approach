@@ -50,8 +50,8 @@ ex9 = let s = \x y z -> x z (y z) in (let k = \a b -> a in (let i = \c -> c in s
 
 ex10 = (let s = \x y z -> x z (y z) in (let k = \a b -> a in s k )) (\x y z -> x z (y z))
 
-x :: forall a . a
-x = x
+x :: a -> a
+x b = b
 
 a = let y = x x in y
 

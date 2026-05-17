@@ -15,19 +15,19 @@
 ## Inference Examples
 
 inference(lambda "x" app "x" "x") 
-ok, retorna error 
+OK, retorna error 
 
 inference(lambda "x" lambda "y" "x") 
-ok, p(nil, t(1) --> t(2) --> t(1))
+OK, p(nil, t(1) --> t(2) --> t(1))
 
 inference(lambda "x" lambda "y" "y") 
-ok, p(nil, t(2) --> t(1) --> t(1))
+OK, p(nil, t(2) --> t(1) --> t(1))
 
 inference(lambda "x" "z") 
-ok, p("z" : t(1), t(2) --> t(1))
+OK, p("z" : t(1), t(2) --> t(1))
 
 inference(lambda "x" app lambda "y" "y" lambda "z" "z") 
-ok, PPair: p(nil, t(4) --> t(2) --> t(2))
+OK, PPair: p(nil, t(4) --> t(2) --> t(2))
 
 inference(app lambda "x" lambda "y" app app "x" "y" "x" lambda "x" lambda "y" "x") 
 não dá, acho que está bem (ghci não dá tipo)
@@ -38,13 +38,13 @@ K = lambda "x" lambda "y" "x"
 S = lambda "x" lambda "y" lambda "z" app app "x" "z" app "y" "z"
 
 inference(lambda "x" "x") 
-ok, p(nil, t(1) --> t(1))
+OK, p(nil, t(1) --> t(1))
 
 inference(lambda "x" lambda "y" "x") 
-ok, p(nil, t(1) --> t(2) --> t(1))
+OK, p(nil, t(1) --> t(2) --> t(1))
 
 inference(lambda "x" lambda "y" lambda "z" app app "x" "z" app "y" "z") 
-ok, p(nil, (t(5) --> t(6) --> t(7)) --> (t(5) --> t(6)) --> t(5) --> t(7))
+OK, p(nil, (t(5) --> t(6) --> t(7)) --> (t(5) --> t(6)) --> t(5) --> t(7))
 
 
 red inference(app lambda "x" lambda "y" lambda "z" app app "x" "z" app "y" "z" lambda "a" "a") .
@@ -103,7 +103,7 @@ red w(nil, lambda "m" (let "y" = "m" in (let "x" = app "y" lambda "x" lambda "y"
 OK
 
 let "x" = lambda "z" lambda "y" app app "z" "y" "y" in app "x" "x" 
-UNIFICATION FAILS, é ok, acho que é suposto
+UNIFICATION FAILS, é OK, acho que é suposto
 
 red w(nil, let "k" = lambda "z" lambda "w" app "z" "w" in lambda "z" app "z" app "k" "k", 1)
 OK
@@ -148,3 +148,37 @@ OK
 app lambda "x" : t(1) "x" lambda "x" : t(1) "x" 
 error o que acho que é correto
 
+app lambda "x" : t(1) -> t(1) "x" lambda "x" : t(1) "x" 
+
+
+#########################################################################
+
+# Examples for systemF
+
+(you can use check and get the correct type, instead of typecheking a type you give)
+
+red typeCheckF(nil, lambdaT t(1) lambda "x" : t(1) "x", forall t(1) t(1) --> t(1)) .
+OK
+
+red typeCheckF(nil, app lambdaT t(1) lambda "x" : t(1) "x" t(2) --> t(2), (t(2) --> t(2)) --> t(2) --> t(2)) .
+OK
+
+red typeCheckF(nil, lambdaT t(1) lambda "f" : t(1) --> t(1) lambda "x" : t(1) app "f" app "f" "x", forall t(1) (t(1) --> t(1)) --> t(1) --> t(1)) .
+OK
+
+red typeCheckF(nil, lambdaT t(1) lambda "x" : t(1) lambda "y" : t(1) "x"  , forall t(1) t(1) --> t(1) --> t(1)) .
+OK
+
+red typeCheckF(nil, lambda "b" : forall t(1) t(1) --> t(1) --> t(1) lambdaT t(1) lambda "x" : t(1) lambda "y" : t(1) app app app "b" t(1) "y" "x" , (forall t(1) t(1) --> t(1) --> t(1)) --> forall t(1) t(1) --> t(1) --> t(1)) .
+OK --- note that the type must be t(1) in the lambdas following the first one
+
+--- church numbers (ch 23.4 pierce)
+
+red typeCheckF(nil, lambdaT t(1) lambda "s" : t(1) --> t(1) lambda "z" : t(1) "z", forall t(1) (t(1) --> t(1)) --> t(1) --> t(1) ) .
+OK
+
+red typeCheckF(nil, lambdaT t(1) lambda "s" : t(1) --> t(1) lambda "z" : t(1) app "s" "z", forall t(1) (t(1) --> t(1)) --> t(1) --> t(1) ) .
+OK
+
+red typeCheckF(nil, lambdaT t(1) lambda "s" : t(1) --> t(1) lambda "z" : t(1) app "s" app "s" "z", forall t(1) (t(1) --> t(1)) --> t(1) --> t(1) ) .
+OK
