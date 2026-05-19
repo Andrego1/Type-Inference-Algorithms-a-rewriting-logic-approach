@@ -62,7 +62,9 @@ fmod SYSTEMF is
     eq checkApp2(TYPE1, TYPE2)            = error [owise] .
 
     op checkApp : Type Type -> Type .
-    eq checkApp(TYPE1 --> TYPE2, TYPE1) = TYPE2 .
+    eq checkApp(TYPE1 --> TYPE2, TYPE1) = TYPE2 . 
+    --- do i need to esure the types are the same even with different names?
+    --- ex: (forall t(1) t(1) --> t(1) --> t(1)) --> t(1) and forall t(3) t(3) --> t(3) --> t(3)
     eq checkApp(TYPE1, TYPE2)           = error [owise] .
 
     op checkLam : Type Type -> Type .
