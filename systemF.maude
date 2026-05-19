@@ -16,7 +16,8 @@ fmod SYSTEMF is
     op forall _ _ : TypeVar Type -> Type .
 
     subsort TypeVar < Env . --- O ambiente pode ter typeVar no sytemF (ch23.3 pierce)
-    --- é necessário?
+    --- verificar se é mesmo necessário
+    --- se não for o dom pode ser o defenfido em st.maude
 
     vars TYPE1 TYPE2 TYPE3 TYPE4 : Type .
     vars TV1 TV2 TV3 : TypeVar . 
@@ -63,7 +64,7 @@ fmod SYSTEMF is
 
     op checkApp : Type Type -> Type .
     eq checkApp(TYPE1 --> TYPE2, TYPE1) = TYPE2 . 
-    --- do i need to esure the types are the same even with different names?
+    --- precisso de verificar que casos com nome diferente mas são a mesma coisa deve dar?
     --- ex: (forall t(1) t(1) --> t(1) --> t(1)) --> t(1) and forall t(3) t(3) --> t(3) --> t(3)
     eq checkApp(TYPE1, TYPE2)           = error [owise] .
 
