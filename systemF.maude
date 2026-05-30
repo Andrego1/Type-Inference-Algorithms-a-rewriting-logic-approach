@@ -64,7 +64,7 @@ fmod SYSTEMF is
 
     op checkApp : Type Type -> Type .
     eq checkApp(TYPE1 --> TYPE2, TYPE1) = TYPE2 . 
-    --- precisso de verificar que casos com nome diferente mas são a mesma coisa deve dar?
+    --- precisso de verificar que casos com nome diferente mas são a mesma coisa deve dar? NÃO, está bem como está!
     --- ex: (forall t(1) t(1) --> t(1) --> t(1)) --> t(1) and forall t(3) t(3) --> t(3) --> t(3)
     eq checkApp(TYPE1, TYPE2)           = error [owise] .
 

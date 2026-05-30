@@ -27,7 +27,7 @@ fmod CHECK is
 
     op error : -> Type . --- caso falhar
 
-    --- type check ? ou type assignment ?
+    --- type check ? ou type assignment ? TYPE RECONSTRUCTION, BIDIRECTIONAL TYPE-CHEKING
     op check : Env Term -> Type .
     eq check(E1, X1) = checkVar(dom(X1,E1)) . 
     eq check(E1, lambda X1 : TYPE1 T1) = checkLam(TYPE1,check(E1 X1 : TYPE1, T1)) .
