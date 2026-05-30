@@ -1,0 +1,198 @@
+# Examples for ST module
+
+## Operator lambda & app 
+
+(lx.x) = lambda "x" "x"
+(lxy.x) = lambda "x" lambda "y" "x"
+(lx.xx)(lx.xx) = app lambda "x" app "x" "x" lambda "x" app "x" "x"
+(lx.(ly.y)(lz.z)) = lambda "x" app lambda "y" "y" lambda "z" "z"
+((lxy.xyx)(lxy.x))(lxy.y) = app app lambda "x" lambda "y" app app "x" "y" "x" lambda "x" lambda "y" "x" lambda "x" lambda "y" "y"
+
+
+################################################################
+
+
+## Inference Examples
+
+inference(lambda "x" app "x" "x") 
+OK, retorna error 
+
+inference(lambda "x" lambda "y" "x") 
+OK, p(nil, t(1) --> t(2) --> t(1))
+
+inference(lambda "x" lambda "y" "y") 
+OK, p(nil, t(2) --> t(1) --> t(1))
+
+inference(lambda "x" "z") 
+OK, p("z" : t(1), t(2) --> t(1))
+
+inference(lambda "x" app lambda "y" "y" lambda "z" "z") 
+OK, PPair: p(nil, t(4) --> t(2) --> t(2))
+
+inference(app lambda "x" lambda "y" app app "x" "y" "x" lambda "x" lambda "y" "x") 
+não dá, acho que está bem (ghci não dá tipo)
+
+COMBINADORES S,K,I:
+I = lambda "x" "x"
+K = lambda "x" lambda "y" "x"
+S = lambda "x" lambda "y" lambda "z" app app "x" "z" app "y" "z"
+
+inference(lambda "x" "x") 
+OK, p(nil, t(1) --> t(1))
+
+inference(lambda "x" lambda "y" "x") 
+OK, p(nil, t(1) --> t(2) --> t(1))
+
+inference(lambda "x" lambda "y" lambda "z" app app "x" "z" app "y" "z") 
+OK, p(nil, (t(5) --> t(6) --> t(7)) --> (t(5) --> t(6)) --> t(5) --> t(7))
+
+
+red inference(app lambda "x" lambda "y" lambda "z" app app "x" "z" app "y" "z" lambda "a" "a") .
+:t (\x -> \y -> \z -> x z (y z)) (\a -> a) para ghci
+
+--- eles funcionam para o inference
+lambda "x" lambda "y" lambda "z" app app "x" "z" "y"
+:t \x -> \y -> \z -> (x z) y
+
+lambda "x" lambda "y" app lambda "z" "x" app "y" "x"
+:t \x -> \y -> (\z -> x) (y x)
+
+lambda "x" lambda "y" app app "y" lambda "z" app app "z" "x" "x" "x"
+:t \x -> \y -> (y (\z -> (z x) x)) x
+
+lambda "x" lambda "y" app app "x" "y" lambda "z" app "y" "z"
+:t \x -> \y ->  (x y) (\z -> (y z))
+
+
+########################################################################
+
+
+### from FLP notes
+
+lambda "x" lambda "y" app app "x" "y" "y"
+
+lambda "x" lambda "y" lambda "z" app "x" app "y" "z"
+
+lambda "x" lambda "y" lambda "z" app app "x" "y" "z"
+
+lambda "x" lambda "y" lambda "z" app app "x" "z" "y"
+
+lambda "x" lambda "y" app lambda "z" "x" app "y" "z"
+
+lambda "x" lambda "y" app app "y" lambda "z" app app "z" "x" "x" "x"
+
+lambda "x" lambda "y" app app "x" "y" lambda "z" app "y" "z"
+
+#########################################################################
+
+# Examples ONLY for POLY 
+
+red w(nil, let "i" = lambda "x" "x" in "i", 1) .
+OK
+
+red w(nil, lambda "x" let "y" = "x" in "y", 1) .
+OK
+
+red w(nil, let "i" = lambda "x" "x" in app "i" "i", 1) . 
+OK
+
+red w(nil, let "i" = lambda "x" let "y" = "x" in "y" in app "i" "i", 1) .
+OK
+
+red w(nil, lambda "m" (let "y" = "m" in (let "x" = app "y" lambda "x" lambda "y" "x" in "x" )), 1) .
+OK
+
+let "x" = lambda "z" lambda "y" app app "z" "y" "y" in app "x" "x" 
+UNIFICATION FAILS, é OK, acho que é suposto
+
+red w(nil, let "k" = lambda "z" lambda "w" app "z" "w" in lambda "z" app "z" app "k" "k", 1)
+OK
+
+red w(nil, let "k" = lambda "x" lambda "y" "x" in let "w" = lambda "x" lambda "y" lambda "z" app app "x" "y" "z" in app app "k" "w" "w", 1) .
+OK
+
+red w(nil, let "s" = lambda "x" lambda "y" lambda "z" app app "x" "z" app "y" "z" in let "k" = lambda "x" lambda "y" "x" in let "i" = lambda "x" "x" in app app "s" "k" "i", 1) .
+OK
+
+red w(nil, app let "s" = lambda "x" lambda "y" lambda "z" app app "x" "z" app "y" "z" in let "k" = lambda "x" lambda "y" "x" in app "s" "k" lambda "x" lambda "y" lambda "z" app app "x" "z" app "y" "z", 1) .
+OK
+
+
+--- outros mais diferentes em que pensei
+red w("x" : forall t(1) t(1) "y" : forall t(2) t(2), app "x" "y", 1) .
+ghci> let x = 1
+ghci> let y = 2
+ghci> :t x y
+os tipos foram do mesmo genero
+
+red w(x(1) : forall t(2) forall t(3) t(2), x(1), 1) .
+
+
+#########################################################################
+
+
+# Examples for CHECK
+
+red typeCheck(nil, lambda "x" : t(1) "x", t(1) --> t(1)) .
+OK
+
+red typeCheck(nil, lambda "x" : t(1) lambda "y" : t(2) "x", t(1) --> t(2) --> t(1)) .
+OK
+
+red typeCheck(nil, lambda "x" : t(3) --> t(2) --> t(1) lambda "y" : t(3) --> t(2) lambda "z" : t(3) app app "x" "z" app "y" "z", (t(3) --> t(2) --> t(1)) --> (t(3) --> t(2)) --> t(3) --> t(1)) .
+OK
+
+red typeCheck(nil, lambda "x" : t(1) lambda "y" : t(2) "y", t(1) --> t(2) --> t(2)) .
+OK
+
+app lambda "x" : t(1) "x" lambda "x" : t(1) "x" 
+error o que acho que é correto
+
+app lambda "x" : t(1) -> t(1) "x" lambda "x" : t(1) "x" 
+
+
+#########################################################################
+
+# Examples for systemF
+
+(you can use check and get the correct type, instead of typecheking a type you give)
+
+--- IDENTITY
+red typeCheckF(nil, lambdaT t(1) lambda "x" : t(1) "x", forall t(1) t(1) --> t(1)) .
+OK
+
+
+--- IDENTITY 2
+red typeCheckF(nil, app lambdaT t(1) lambda "x" : t(1) "x" t(2) --> t(2), (t(2) --> t(2)) --> t(2) --> t(2)) .
+OK
+
+--- DOUBLING FUNCTION
+red typeCheckF(nil, lambdaT t(1) lambda "f" : t(1) --> t(1) lambda "x" : t(1) app "f" app "f" "x", forall t(1) (t(1) --> t(1)) --> t(1) --> t(1)) .
+OK
+
+--- BOOLEAN RELATED EXAMPLES
+red typeCheckF(nil, lambdaT t(1) lambda "x" : t(1) lambda "y" : t(1) "x"  , forall t(1) t(1) --> t(1) --> t(1)) .
+OK
+
+red typeCheckF(nil, lambda "b" : forall t(1) t(1) --> t(1) --> t(1) lambdaT t(1) lambda "x" : t(1) lambda "y" : t(1) app app app "b" t(1) "y" "x" , (forall t(1) t(1) --> t(1) --> t(1)) --> forall t(1) t(1) --> t(1) --> t(1)) .
+OK --- note that the type must be t(1) in the lambdas following the first one
+
+--- church numbers (ch 23.4 pierce)
+
+red typeCheckF(nil, lambdaT t(1) lambda "s" : t(1) --> t(1) lambda "z" : t(1) "z", forall t(1) (t(1) --> t(1)) --> t(1) --> t(1) ) .
+OK
+
+red typeCheckF(nil, lambdaT t(1) lambda "s" : t(1) --> t(1) lambda "z" : t(1) app "s" "z", forall t(1) (t(1) --> t(1)) --> t(1) --> t(1) ) .
+OK
+
+red typeCheckF(nil, lambdaT t(1) lambda "s" : t(1) --> t(1) lambda "z" : t(1) app "s" app "s" "z", forall t(1) (t(1) --> t(1)) --> t(1) --> t(1) ) .
+OK
+
+--- trees examples LAA --- that is from --- nederpelt_geuvers__type_theory_and_formal_proof_an_introduction.pdf
+--- FINISH!
+red check(nil, lambdaT t(2) lambda "u" : (forall t(1) t(1) --> t(1) --> t(1)) --> t(2) lambda "v" : (forall t(1) t(1) --> t(1) --> t(1)) --> t(2) --> t(2) --> t(2) app "u" lambdaT t(1) lambda "x" : t(1) lambda "y" : t(1) "y") .
+
+red check(nil, lambdaT t(2) lambda "u" : (forall t(1) t(1) --> t(1) --> t(1)) --> t(2) lambda "v" : (forall t(1) t(1) --> t(1) --> t(1)) --> t(2) --> t(2) --> t(2) app app app "v" lambdaT t(1) lambda "x" : t(1) lambda "y" : t(1) "x" app "u" lambdaT t(1) lambda "x" : t(1) lambda "y" : t(1) "y" app "u" lambdaT t(1) lambda "x" : t(1) lambda "y" : t(1) "x") .
+
+red check(nil, lambdaT t(2) lambda "u" : (forall t(1) t(1) --> t(1) --> t(1)) --> t(2) lambda "v" : (forall t(1) t(1) --> t(1) --> t(1)) --> t(2) --> t(2) --> t(2) app app app "v" lambdaT t(1) lambda "x" : t(1) lambda "y" : t(1) "x" app "u" lambdaT t(1) lambda "x" : t(1) lambda "y" : t(1) "x" app app app "v" lambdaT t(1) lambda "x" : t(1) lambda "y" : t(1) "y" app "u" lambdaT t(1) lambda "x" : t(1) lambda "y" : t(1) "x" app "u" lambdaT t(1) lambda "x" : t(1) lambda "y" : t(1) "y" ) .
+
