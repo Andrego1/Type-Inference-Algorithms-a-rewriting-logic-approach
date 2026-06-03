@@ -155,6 +155,12 @@ error o que acho que é correto
 
 app lambda "x" : t(1) -> t(1) "x" lambda "x" : t(1) "x" 
 
+red typeCheck(nil, if t lambda "x" : t(1) lambda "y" : t(2) "y" lambda "x" : t(1) lambda "y" : t(2) "x", t(1) --> t(2) --> t(2)) . 
+FAIL, o tipo tem de ser o mesmo que nesto caso não é!
+
+red typeCheck(nil, if t f t, tybool) . 
+OK
+
 
 #########################################################################
 

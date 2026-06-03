@@ -15,20 +15,7 @@ fmod ST is
     vars T1 T2 T3 : Term . 
     var X1 X2 : Var .
 
-    op x(_) : NzNat -> Var . --- varáveis, ex: x(1), x(2), ... 
-
----(DEPRECATED
-
-    ---op lambda : Var Term -> Term [format (b! o)] . --- abstração
-    ---op app : Term Term -> Term [format (c! o)] .  --- aplicação
-
-    exemplos:
-    (lx.x) = lambda("x", "x") ou lambda(x(1), x(1))
-    (lxy.x) = lambda("x", lambda("y", "x")) ou com "x" = x(1) e "y" = x(2)
-    (lx.xx)(lx.xx) = app(lambda("x", app("x", "x")), lambda("x", app("x", "x"))) 
-    (lx.(ly.y)(lz.z)) = lambda("x", app(lambda("y","y"), lambda("z","z")))
-    ((lxy.xyx)(lxy.x))(lxy.y) = app(app(lambda("x",lambda("y", app(app("x", "y"), "x"))), lambda("x", lambda("y", "x"))), lambda("x", lambda("y", "y")))
-)   
+    op x(_) : NzNat -> Var . --- varáveis, ex: x(1), x(2), ...  
 
     op lambda _ _ : Var Term -> Term [format (b! o o o)] . --- abstração
     op app _ _ : Term Term -> Term [format (c! o o o)] .   --- aplicação
@@ -52,9 +39,9 @@ fmod ST is
     subsorts TypeVar < Type . 
     ---subsorts String < TypeVar . --- causava conflito com o poly
 
-    op t(_) : NzNat -> TypeVar . --- type, ex: t(1), t(2), ...
+    op t(_) : NzNat -> TypeVar  . --- type, ex: t(1), t(2), ...
     op t(_) : String -> TypeVar . --- type, ex: t("asa"), ,t("as"), ....
-    op t(_) : Term -> TypeVar . --- type, ex: t(lambda "x" "x"), ,t(app "x" "y") ....
+    op t(_) : Term -> TypeVar   . --- type, ex: t(lambda "x" "x"), ,t(app "x" "y") ....
 
     --- precisa de ser right associative, acho que está bem
     op _ --> _ : Type Type -> Type [gather (e E) format(o r! o o)] .
@@ -104,13 +91,13 @@ fmod ST is
 
     --- milner's type-inference
     op inference : Term -> PPair .
-    eq inference(T1) = inference'(inference(T1,1)) . --- n é necessário escrever número assim
+    eq inference(T1) = inference'(inference(T1,1)) .
 
-    op inference' : Pair -> PPair . --- obter apenas principal pair
+    op inference' : Pair -> PPair . --- obter principal pair
     eq inference'(pair(p(E1,TYPE1),N1)) = p(E1,TYPE1) .
     eq inference'(errorp) = error .
     
-    --- inference com numeros
+    --- inference com numeros auxiliares
     op inference : Term NzNat -> Pair . 
     eq inference(X1, N1) = pair(p(X1 : t(N1), t(N1)), N1) .
     ceq inference(app T1 T2, N1) = compute1'(inference(T1, N1), T2, intersect(freeVar(T1), freeVar(T2)))
@@ -146,41 +133,6 @@ fmod ST is
     eq applyE''(C1, nil, E2) = E2 .
     eq applyE''(V1 = TYPE1, X1 : TYPE2 E1, E2) = applyE''(V1 = TYPE1, E1, X1 : tsub(TYPE2,TYPE1,V1) E2) .
 
-
----( --- DEPRECATED
-
-    --- SEM NUMEROS NOS TYPES
-    --- TAMBEM applyE não está correto, APESAR DE TER FUNCIONADO BEM COM OS CONBINADORES E OUTROS EXEMPLOS, luckly i guess
-    op inference : Term -> PPair . 
-    eq inference(X1) = p(X1 : t(X1), t(X1)) .
-    ceq inference(app T1 T2) = compute1(inference(T1), inference(T2), intersect(freeVar(T1), freeVar(T2)), t(app T1 T2))
-        if inference(T1) =/= error /\ inference(T2) =/= error .
-    eq inference(lambda X1 T1) = computeL(X1, inference(T1)) . 
-
-    op computeL : Var PPair -> PPair .
-    eq computeL(X1, error) = error .
-    ceq computeL(X1, p(E1,TYPE1)) = p(E1, t(X1) --> TYPE1)
-        if dom(X1,E1) == nil .
-    eq computeL(X1, p(E1,TYPE1)) = p(excludeE(E1,dom(X1,E1)), rg(dom(X1,E1)) --> TYPE1) .
-
-
-    op compute1 : PPair PPair Term Type -> PPair .
-    eq compute1(p(E1,TYPE1),p(E2,TYPE2), VARS, TYPE3) = compute2(unify(computeA(E1,E2,VARS,nil) TYPE1 = TYPE2 --> TYPE3, nil), E1, E2, TYPE3) .
-
-    op compute2 : SetOfConstraint Env Env Type -> PPair .
-    eq compute2(nil, E1, E2, TYPE1) = p(E1 E2, TYPE1) .
-    eq compute2(fail, E1, E2, TYPE1) = error . --- caso de unificação falhar
-    ceq compute2(S1, E1, E2, TYPE1) = p(applyE(S1, E1 E2, nil), applyT(S1,TYPE1))
-        if S1 =/= nil /\ S1 =/= fail .
-    
-
-    --- este operador está mal feito em geral, ele apenas aplica uma vez no primeiro, não deve dar mal apenas com o contador
-    op applyE : SetOfConstraint Env Env -> Env .
-    eq applyE(S1, nil, E2) = E2 .
-    eq applyE(nil, E1, E2) = E1 E2 . 
-    eq applyE(V1 = TYPE1 S1, X1 : TYPE2 E1, E2) = applyE(S1, E1, X1 : tsub(TYPE2,TYPE1,V1) E2) .
-
-)
 
     --- excluir um Assign do Env 
     op excludeE : Env Assign -> Env .
@@ -292,8 +244,6 @@ fmod ST is
     --- unify types
     --- unify("t1" --> "t2" --> "t3" = "a" --> "b" --> "c",nil) OK
     --- unify("a" = "1" "b" = "2" "c" = "3", nil) OK
-    --- in fact, when there is more than 2 constraints it is a kind either in res or given
-    --- CORRECTED, SetOfConstraint was only 2 Constraint and not 2 SetOfConstraint
     --- unify("x" = "y" --> "x", nil) OK
     --- unify("x" = "y" --> "y", nil) OK
     --- unify("x" = "b" --> "a" "a" = "c" --> "b" "c" = "e", nil) ok
