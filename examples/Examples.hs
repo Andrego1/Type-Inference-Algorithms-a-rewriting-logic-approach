@@ -28,7 +28,7 @@ ex3d = \x y -> x y (\z -> y z)
 
 
 --- Examples only for POLY module
---- first ones are taken from: https://github.com/wh5a/Algorithm-W-Step-By-Step/blob/master/AlgorithmW.pdf
+--- first 5 are taken from: https://github.com/wh5a/Algorithm-W-Step-By-Step/blob/master/AlgorithmW.pdf
 
 ex1 = let i = \x -> x in i
 
