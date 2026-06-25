@@ -184,7 +184,7 @@ fmod ST is
 
     --- o meu A é constraint onde tipos das fv(T1 T2) são iguais
     --- (ver o ponto 2 no Milner's type-inference algorithm FLP) 
-    --- computeA("x" : "1" --> "2" "y" : "a" "q" : "a" --> "b", "y" : "c" --> "d" "x" : "t1" --> "t2","x" "y", nil)
+    --- computeA("x" : t(1) --> t(2) "y" : t(3) "q" : t(3) --> t(4), "y" : t(5) --> t(6) "x" : t(7) --> t(8),"x" "y", nil)
     op computeA : Env Env Term SetOfConstraint -> SetOfConstraint .
     eq computeA(E1, E2, nil, S1) = S1 .
     ceq computeA(E1, E2, X1 T1, S1) = computeA(E1, E2, T1, rg(dom(X1,E1)) = rg(dom(X1,E2)) S1)
@@ -242,6 +242,8 @@ fmod ST is
     op fail : -> Constraint .
 
     --- unify types
+    --- OLD EXAMPLES, TYPE VARIABLES ARE ONLY LIKE t(n) where n >= 0
+    --- need to replace them all
     --- unify("t1" --> "t2" --> "t3" = "a" --> "b" --> "c",nil) OK
     --- unify("a" = "1" "b" = "2" "c" = "3", nil) OK
     --- unify("x" = "y" --> "x", nil) OK
