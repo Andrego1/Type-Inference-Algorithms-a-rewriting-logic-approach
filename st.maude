@@ -250,7 +250,6 @@ fmod ST is
     --- unify("x" = "b" --> "a" "a" = "c" --> "b" "c" = "e" "b" = "1" --> "2", nil) ok
     op unify : SetOfConstraint SetOfConstraint -> SetOfConstraint .
     eq unify(nil, S2) = S2 .
-    eq unify(fail S1, S2) = fail .
     eq unify(TYPE1 = TYPE1 S1, S2) = unify(S1, S2) . 
     eq unify(TYPE1 --> TYPE2 = TYPE3 --> TYPE4 S1, S2) = unify((TYPE1 = TYPE3) (TYPE2 = TYPE4) (S1), S2) .
     eq unify(TYPE1 --> TYPE2 = V1 S1, S2) = unify((V1 = TYPE1 --> TYPE2) (S1), S2) . 
