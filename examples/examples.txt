@@ -110,7 +110,7 @@ OK
 let "x" = lambda "z" lambda "y" app app "z" "y" "y" in app "x" "x" 
 UNIFICATION FAILS, é OK, acho que é suposto
 
-red w(nil, let "k" = lambda "z" lambda "w" app "z" "w" in lambda "z" app "z" app "k" "k", 1)
+red w(nil, let "k" = lambda "z" lambda "w" app "z" "w" in lambda "z" app "z" app "k" "k", 1) .
 OK
 
 red w(nil, let "k" = lambda "x" lambda "y" "x" in let "w" = lambda "x" lambda "y" lambda "z" app app "x" "y" "z" in app app "k" "w" "w", 1) .

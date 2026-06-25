@@ -41,13 +41,13 @@ fmod POLY is
     --- tsub(o,t,p) -> o[t/p]
     eq tsub(V1, TYPE1, V1) = TYPE1 .
     ceq tsub(V2, TYPE1, V1) = V2
-        if (V2 :: TypeVar) /\ V2 =/= V1 . --- preciso mesmo do (V2 :: TypeVar)? 
+        if V2 =/= V1 .
     eq tsub((TS2 --> TS3), TYPE1, V1) = tsub(TS2, TYPE1, V1) --> tsub(TS3, TYPE1, V1) .
     ceq tsub(forall V1 TS1, TYPE1, V2) = forall V1 tsub(TS1, TYPE1, V2) 
         if V1 =/= V2 .
     eq tsub(forall V1 TS1, TYPE1, V1) = forall V1 TS1 .
 
-    --- aplicar constraint a todos os elementos de Env --- VERSÃO POLY
+    --- aplicar constraint a todos os elementos de Env --- VERSÃO POLY --- necessario!
     op applyE'' : Constraint Env Env -> Env .
     eq applyE''(C1, nil, E2) = E2 .
     eq applyE''(V1 = TYPE1, X1 : TS1 E1, E2) = applyE''(V1 = TYPE1, E1, X1 : tsub(TS1,TYPE1,V1) E2) .
@@ -62,38 +62,33 @@ fmod POLY is
 
     --- sort do resultado 
     sort WPair .
-    op wpair : SetOfConstraint TypeScheme NzNat -> WPair .
+    op wpair : SetOfConstraint Type NzNat -> WPair .
 
 
     --- algoritmo w
     op w : Env Term NzNat -> WPair .
     ceq w(E1, X1, N1) = compute(rg(dom(X1,E1)), N1, nil) 
-        if dom(X1,E1) =/= nilA . --- acho que deveria colocar um caso que se dom(X1,E1) == nilA então errorW 
+        if dom(X1,E1) =/= nilA .
     eq w(E1, app T1 T2, N1) = compute1(w(E1,T1,N1),T2,E1) .
     eq w(E1, lambda X1 T1, N1) = computeL(w(excludeE(E1,dom(X1,E1)) X1 : t(N1), T1, N1 + 1), N1) .
     eq w(E1, let X1 = T1 in T2, N1) = compute1'(w(E1,T1,N1), T2, E1, X1) .
 
     --- auxiliares para caso 4)
     op compute1' : WPair Term Env Var -> WPair .
-    eq compute1'(wpair(S1,TS1,N1), T2, E1, X1) = compute2'(wpair(S1,TS1,N1), w(applyE'(S1,E1) X1 : closure(applyE'(S1,E1), TS1, typevars(TS1), nil), T2, N1 )) .
+    eq compute1'(wpair(S1,TYPE1,N1), T2, E1, X1) = compute2'(wpair(S1,TYPE1,N1), w(applyE'(S1,E1) X1 : closure(applyE'(S1,E1), TYPE1, typevars(TYPE1), nil), T2, N1 )) .
 
     op compute2' : WPair WPair -> WPair .
-    eq compute2'(wpair(S1,TS1,N1), wpair(S2,TS2,N2)) = wpair(S1 S2, TS2, N2) .
+    eq compute2'(wpair(S1,TYPE1,N1), wpair(S2,TYPE2,N2)) = wpair(S1 S2, TYPE2, N2) .
 
-    --- VERIFICAR de novo, ao rever quando fiz último commit deu-me a etender que pode ainda dar asneira....
-    --- ACHO QUE AFINAL ESTÁ BEM!
-    op closure : Env TypeScheme TypeVars TypeVars -> TypeScheme .
-    eq closure(nil, TS1 --> TS2, TVARS1, TVARS2) = closure'(TS1 --> TS2, except(TVARS1,TVARS2)) .
-    eq closure(nil, TS1, TVARS1, TVARS2) = closure'(TS1, nil) . --- caso onde closure("x" : t(1), t(1), t(1), nil), sem ele era forall t(1) t(1) o que é errado
-    ---eq closure(nil, TS1, TVARS1, TVARS2) = closure'(TS1, except(TVARS1, typevars(TS1))) . -- correct?
-    ceq closure((X1 : TS2) E1, TS1, TVARS1, TVARS2) = closure(E1, TS1, TVARS1, typevars(TS2) TVARS2)
-        if TS2 =/= TS1 .
-    ceq closure((X1 : TS2) E1, TS1, TVARS1, TVARS2) = closure(E1, TS1, TVARS1, TVARS2)
-        if TS1 == TS2 .
+    --- forall (ftv(t) \ ftv(env)) . t
+    op closure : Env Type TypeVars TypeVars -> TypeScheme .
+    eq closure(nil, TYPE1, TVARS1, TVARS2) = closure'(TYPE1, except(TVARS1,TVARS2)) .
+    eq closure((X1 : TS2) E1, TYPE1, TVARS1, TVARS2) = closure(E1, TYPE1, TVARS1, typevars(TS2) TVARS2) .
 
-    op closure' : TypeScheme TypeVars -> TypeScheme .
-    eq closure' (TS1, nil) = TS1 .
-    eq closure' (TS1, V1 TVARS1) = forall V1 closure'(TS1, TVARS1) .
+
+    op closure' : Type TypeVars -> TypeScheme .
+    eq closure' (TYPE1, nil) = TYPE1 .
+    eq closure' (TYPE1, V1 TVARS1) = forall V1 closure'(TYPE1, TVARS1) .
 
     op typevars : TypeScheme -> TypeVars .
     eq typevars(V1) = V1 .
@@ -111,17 +106,17 @@ fmod POLY is
 
     --- auxiliar para caso 3)
     op computeL : WPair NzNat -> WPair .
-    eq computeL(wpair(S1, TS1, N1), N2) = wpair(S1, applyT(S1,t(N2) --> TS1), N1) .
+    eq computeL(wpair(S1, TYPE1, N1), N2) = wpair(S1, applyT(S1,t(N2) --> TYPE1), N1) .
 
     --- auxiliares para caso 2)
     op compute1 : WPair Term Env -> WPair .
-    eq compute1(wpair(S1, TS1, N1), T2,E1) = compute2(wpair(S1, TS1, N1), w(applyE'(S1,E1), T2, N1)) .
+    eq compute1(wpair(S1, TYPE1, N1), T2,E1) = compute2(wpair(S1, TYPE1, N1), w(applyE'(S1,E1), T2, N1)) .
 
     op compute2 : WPair WPair -> WPair .
-    eq compute2(wpair(S1, TS1, N1), wpair(S2, TS2, N2)) = compute3(wpair(S1, TS1, N1), wpair(S2, TS2, N2), unify(applyT(S2, TS1) = TS2 --> t(N2), nil)) .
+    eq compute2(wpair(S1, TYPE1, N1), wpair(S2, TYPE2, N2)) = compute3(wpair(S1, TYPE1, N1), wpair(S2, TYPE2, N2), unify(applyT(S2, TYPE1) = TYPE2 --> t(N2), nil)) .
 
     op compute3 : WPair WPair SetOfConstraint -> WPair .
-    eq compute3(wpair(S1, TS1, N1), wpair(S2, TS2, N2), S3) = wpair(S1 S2 S3, applyT(S3, t(N2)), N2 + 1) .
+    eq compute3(wpair(S1, TYPE1, N1), wpair(S2, TYPE2, N2), S3) = wpair(S1 S2 S3, applyT(S3, t(N2)), N2 + 1) .
     --- dúvida com a composição do S1 S2 S3, estando nesta ordem resulta como composição? 
     --- eu acho que aplica primeiro os de S1 depois S2 e no final S3 isto é S3(S2(S1(a)))
     --- como é suposto
