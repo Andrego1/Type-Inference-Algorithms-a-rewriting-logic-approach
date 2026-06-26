@@ -1,7 +1,7 @@
 fmod CHECK is
 
     including ST . --- verificar se este tipo de importação é o mais correto
-    including POLY .
+    ---including POLY . --- importar o let
 
     vars TYPE1 TYPE2 TYPE3 TYPE4 : Type .
     vars V1 V2 V3 : TypeVar . 
@@ -32,7 +32,7 @@ fmod CHECK is
     eq check(E1, X1) = checkVar(dom(X1,E1)) . 
     eq check(E1, lambda X1 : TYPE1 T1) = checkLam(TYPE1,check(E1 X1 : TYPE1, T1)) .
     eq check(E1, app T1 T2) = checkApp(check(E1, T1), check(E1, T2)) .
-    eq check(E1, let X1 = T1 in T2) = checkLet(check(E1, T1), T2, X1, E1) . --- poly
+    ---eq check(E1, let X1 = T1 in T2) = checkLet(check(E1, T1), T2, X1, E1) . --- poly
     eq check(E1, if T1 T2 T3) = checkIf(E1, check(E1, T1), T2, T3) .
     eq check(E1, t) = tybool . --- type bool
     eq check(E1, f) = tybool . --- type bool
@@ -45,9 +45,9 @@ fmod CHECK is
     eq checkIf'(TYPE1, TYPE1) = TYPE1 .
     eq checkIf'(TYPE1, TYPE2) = error [owise] .
 
-    op checkLet : Type Term Var Env -> Type . --- poly
-    eq checkLet(error, T2, X1, E1) = error .
-    eq checkLet(TYPE1, T2, X1, E1) = check(E1 X1 : TYPE1, T2) .
+    ---op checkLet : Type Term Var Env -> Type . --- poly
+    ---eq checkLet(error, T2, X1, E1) = error .
+    ---eq checkLet(TYPE1, T2, X1, E1) = check(E1 X1 : TYPE1, T2) .
 
     op checkApp : Type Type -> Type .
     eq checkApp(TYPE1 --> TYPE2, TYPE1) = TYPE2 .
@@ -66,19 +66,5 @@ fmod CHECK is
     eq typeCheck(E1, T1, TYPE1) = check(E1, T1) == TYPE1 .
 
 
-
-    --- type check?
-    --- é basicamente a mesma coisa, não?
-    ---op check : Env Term Type -> Bool .
-    ---eq check(E1, X1, TYPE1) = rg(dom(X1,E1)) == TYPE1 .
-    ---eq check(E1, lambda X1 : TYPE1 T1, TYPE1 --> TYPE3) = check(E1 X1 : TYPE1, T1, TYPE3) .
-    ---eq check(E1, app T1 T2, TYPE1) = checkApp(E1, T1, TYPE1, check(E1, T2)) .
-    ------ eu tenho de inferir o tipo de pelo menos de um.... no app
-    ---eq check(E1, T1, TYPE1) = false [owise] .
----
-    ---op checkApp : Env Term Type Type -> Bool .
-    ---eq checkApp(E1, T1, TYPE1, error) = false .
-    ---eq checkApp(E1, T1, error, TYPE2) = false . --- necessário?
-    ---eq checkApp(E1, T1, TYPE1, TYPE2) = check(E1, T1, TYPE2 --> TYPE1) .
 
 endfm

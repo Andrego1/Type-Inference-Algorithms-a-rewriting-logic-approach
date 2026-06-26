@@ -207,3 +207,14 @@ red check(nil, lambdaT t(2) lambda "u" : (forall t(1) t(1) --> t(1) --> t(1)) --
 
 red check(nil, lambdaT t(2) lambda "u" : (forall t(1) t(1) --> t(1) --> t(1)) --> t(2) lambda "v" : (forall t(1) t(1) --> t(1) --> t(1)) --> t(2) --> t(2) --> t(2) app app app "v" lambdaT t(1) lambda "x" : t(1) lambda "y" : t(1) "x" app "u" lambdaT t(1) lambda "x" : t(1) lambda "y" : t(1) "x" app app app "v" lambdaT t(1) lambda "x" : t(1) lambda "y" : t(1) "y" app "u" lambdaT t(1) lambda "x" : t(1) lambda "y" : t(1) "x" app "u" lambdaT t(1) lambda "x" : t(1) lambda "y" : t(1) "y" ) .
 
+--- List of booleans
+
+--- type of a bool list
+forall t(1) t(1) --> ((forall t(1) t(1) --> t(1) --> t(1)) --> t(1) --> t(1) ) --> t(1)
+
+nill = lambdaT t(1) lambda "x" : t(1) lambda "v" : ((forall t(1) t(1) --> t(1) --> t(1)) --> t(1) --> t(1) ) "x"
+
+[true, true] = lambdaT t(1) lambda "x" : t(1) lambda "v" : ((forall t(1) t(1) --> t(1) --> t(1)) --> t(1) --> t(1) ) app app "v" (lambdaT t(1) lambda "x" : t(1) lambda "y" : t(1) "x") app app "v" (lambdaT t(1) lambda "x" : t(1) lambda "y" : t(1) "x") "x"
+
+isNill = lambda "l" : forall t(1) t(1) --> ((forall t(1) t(1) --> t(1) --> t(1)) --> t(1) --> t(1) ) --> t(1) lambdaT t(1) lambda "x" : t(1) lambda "y" : t(1) app app app "l" t(1) "x" (lambda "k" : (forall t(1) t(1) --> t(1) --> t(1)) lambda "z" : t(1) "y" )
+

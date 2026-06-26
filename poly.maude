@@ -37,7 +37,7 @@ fmod POLY is
     ---eq applyT(nil, TS1) = TS1 .
     ---eq applyT(V1 = TS1 S1, TS2) = applyT(S1, tsub(TS2, TS1, V1)) .
 
-    --- teria de mudar por causa do de cima --- VERSÃO POLY
+    --- teria de mudar por causa do operador abaixo --- VERSÃO POLY
     op tsub : TypeScheme Type TypeVar -> TypeScheme .
     --- tsub(o,t,p) -> o[t/p]
     eq tsub(V1, TYPE1, V1) = TYPE1 .
@@ -121,12 +121,15 @@ fmod POLY is
     --- dúvida com a composição do S1 S2 S3, estando nesta ordem resulta como composição? 
     --- eu acho que aplica primeiro os de S1 depois S2 e no final S3 isto é S3(S2(S1(a)))
     --- como é suposto
+    --- funciona como esperado, o SetOfConstraint é mais como uma lista do que um conjunto, a ordem importa
+    --- DONE!
 
     --- auxiliar para caso 1)
     op compute : TypeScheme NzNat SetOfConstraint -> WPair .
     eq compute(forall V1 TS1, N1, S1) = compute(TS1, N1 + 1, V1 = t(N1) S1) .
     eq compute(TYPE1, N1, S1) = wpair(nil, applyT(S1, TYPE1), N1)  . 
     --- lembrar que applyT : SetOfConstraint Type -> Type, acho que não tem problema apenas ser Type neste caso, VERIFICAR!
+    --- DONE!
 
     
 endfm
