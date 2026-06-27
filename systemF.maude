@@ -7,17 +7,11 @@ fmod SYSTEMF is
 
     op lambdaT _ _ : TypeVar Term -> Term [format (m! o o o)] . 
 
-    --- o lambda defenido 2x no mesmo ficheiro causa problemas
-    --- pensa que pode aplicar tanto um como o outro, mas escolhe o correto, 
-    --- se o importar é ok
-
     op app _ _ : Term Type -> Term .
 
     op forall _ _ : TypeVar Type -> Type .
 
-    subsort TypeVar < Env . --- O ambiente pode ter typeVar no sytemF (ch23.3 pierce)
-    --- verificar se é mesmo necessário
-    --- se não for o dom pode ser o defenfido em st.maude
+    subsort TypeVar < Env . 
 
     vars TYPE1 TYPE2 TYPE3 TYPE4 : Type .
     vars TV1 TV2 TV3 : TypeVar . 
@@ -29,16 +23,15 @@ fmod SYSTEMF is
     var S1 S2 S3 : SetOfConstraint .
     var C1 : Constraint .
 
-    op error : -> Type . --- caso seja erro 
+    op error : -> Type .  
 
     op dom : Var Env -> Assign .
     eq dom(X1, nil) = nilA .
     ceq dom(X1, X2 : TYPE1 E1) = dom(X1, E1) 
         if X1 =/= X2 .
     eq dom(X1, X1 : TYPE1 E1) = X1 : TYPE1 .
-    eq dom(X1, TV1 E1) = dom(X1, E1) . --- caso novo
+    eq dom(X1, TV1 E1) = dom(X1, E1) . --- new case
 
-    --- verificar se é mesmo necessário!
     op tsub : Type Type TypeVar -> Type .
     --- tsub(o,t,p) -> o[t/p]
     eq tsub(TV1, TYPE1, TV1) = TYPE1 .
@@ -49,10 +42,8 @@ fmod SYSTEMF is
         if TV1 =/= TV2 .
     eq tsub(forall TV1 TYPE1, TYPE2, TV1) = forall TV1 TYPE1 .
 
-    --- essencialmente o var,app,abs são iguais ao de CHECK
-    --- removi os if e let e fiz para T-ABS e T-APP 
     op check : Env Term -> Type .
-    eq check(E1, X1) = checkVar(dom(X1,E1)) . --- devo ter de redefenir dom por causa de typevars no env
+    eq check(E1, X1) = checkVar(dom(X1,E1)) . 
     eq check(E1, lambda X1 : TYPE1 T1) = checkLam(TYPE1,check(E1 X1 : TYPE1, T1)) .
     eq check(E1, app T1 T2) = checkApp(check(E1, T1), check(E1, T2)) .
     eq check(E1, lambdaT TV1 T1) = forall TV1 check(E1 TV1, T1) . 
@@ -64,8 +55,6 @@ fmod SYSTEMF is
 
     op checkApp : Type Type -> Type .
     eq checkApp(TYPE1 --> TYPE2, TYPE1) = TYPE2 . 
-    --- precisso de verificar que casos com nome diferente mas são a mesma coisa deve dar? NÃO, está bem como está!
-    --- ex: (forall t(1) t(1) --> t(1) --> t(1)) --> t(1) and forall t(3) t(3) --> t(3) --> t(3)
     eq checkApp(TYPE1, TYPE2)           = error [owise] .
 
     op checkLam : Type Type -> Type .

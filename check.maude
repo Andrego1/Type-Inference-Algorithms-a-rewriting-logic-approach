@@ -1,7 +1,6 @@
 fmod CHECK is
 
-    including ST . --- verificar se este tipo de importação é o mais correto
-    ---including POLY . --- importar o let
+    including ST . 
 
     vars TYPE1 TYPE2 TYPE3 TYPE4 : Type .
     vars V1 V2 V3 : TypeVar . 
@@ -20,19 +19,18 @@ fmod CHECK is
     op f : -> Term [format (r! o)] . --- false
     op if _ _ _ : Term Term Term -> Term [format (c! o o o o)] . 
 
-    sort TyBool . --- type boolean para t e f
+    sort TyBool . --- type boolean for t and f
     subsort TyBool < Type .
 
     op tybool : -> TyBool .
 
-    op error : -> Type . --- caso falhar
+    op error : -> Type . --- in case of error
 
-    --- type check ? ou type assignment ? TYPE RECONSTRUCTION, BIDIRECTIONAL TYPE-CHEKING
+    --- more like TYPE RECONSTRUCTION, BIDIRECTIONAL TYPE-CHEKING
     op check : Env Term -> Type .
     eq check(E1, X1) = checkVar(dom(X1,E1)) . 
     eq check(E1, lambda X1 : TYPE1 T1) = checkLam(TYPE1,check(E1 X1 : TYPE1, T1)) .
     eq check(E1, app T1 T2) = checkApp(check(E1, T1), check(E1, T2)) .
-    ---eq check(E1, let X1 = T1 in T2) = checkLet(check(E1, T1), T2, X1, E1) . --- poly
     eq check(E1, if T1 T2 T3) = checkIf(E1, check(E1, T1), T2, T3) .
     eq check(E1, t) = tybool . --- type bool
     eq check(E1, f) = tybool . --- type bool
@@ -44,10 +42,6 @@ fmod CHECK is
     op checkIf' : Type Type -> Type .
     eq checkIf'(TYPE1, TYPE1) = TYPE1 .
     eq checkIf'(TYPE1, TYPE2) = error [owise] .
-
-    ---op checkLet : Type Term Var Env -> Type . --- poly
-    ---eq checkLet(error, T2, X1, E1) = error .
-    ---eq checkLet(TYPE1, T2, X1, E1) = check(E1 X1 : TYPE1, T2) .
 
     op checkApp : Type Type -> Type .
     eq checkApp(TYPE1 --> TYPE2, TYPE1) = TYPE2 .
@@ -61,7 +55,7 @@ fmod CHECK is
     eq checkVar(nilA)       = error .
     eq checkVar(X1 : TYPE1) = TYPE1 .
 
-    --- isto seria ok, como typecheck ?
+    --- just to verify, it is not necessary
     op typeCheck : Env Term Type -> Bool . 
     eq typeCheck(E1, T1, TYPE1) = check(E1, T1) == TYPE1 .
 
