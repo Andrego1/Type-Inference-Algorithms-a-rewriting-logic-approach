@@ -36,7 +36,7 @@ And later test an example:
 reduce lambda "x" "x" .
 ```
 
-In this case it should just appear that it has the sort `Term`, that is it is a correctly typed term.
+In this case it should just appear that it has the sort `Term`, that is it is a correctly formed term.
 
 ```
 reduce in ST : lambda "x" "x" .
@@ -49,3 +49,6 @@ result Term: lambda "x" "x"
 There are some file depedencies important to note. Which means you need to load certain files for it to work.
 
 The files `poly.maude`, `check.maude`, and `systemF.maude` all depend on `st.maude`.
+
+So you need to do first load the `st.maude` file and after you can load the others.
+
