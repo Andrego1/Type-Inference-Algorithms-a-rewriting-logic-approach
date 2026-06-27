@@ -15,29 +15,29 @@
 ## Inference Examples
 
 # omega
-inference(lambda "x" app "x" "x") 
+red inference(lambda "x" app "x" "x") .
 OK, retorna error 
 
 # true
-inference(lambda "x" lambda "y" "x") 
+red inference(lambda "x" lambda "y" "x") .
 OK, p(nil, t(1) --> t(2) --> t(1))
 
 # false
-inference(lambda "x" lambda "y" "y") 
+red inference(lambda "x" lambda "y" "y") .
 OK, p(nil, t(2) --> t(1) --> t(1))
 
 # an example
-inference(lambda "x" "z") 
+red inference(lambda "x" "z") .
 OK, p("z" : t(1), t(2) --> t(1))
 
 # basicaly the same as false
-inference(lambda "x" app lambda "y" "y" lambda "z" "z") 
+red inference(lambda "x" app lambda "y" "y" lambda "z" "z") .
 OK, PPair: p(nil, t(4) --> t(2) --> t(2))
 
-inference(app lambda "x" lambda "y" app app "x" "y" "x" lambda "x" lambda "y" "x") 
-não dá, acho que está bem (ghci não dá tipo)
+red inference(app lambda "x" lambda "y" app app "x" "y" "x" lambda "x" lambda "y" "x") .
+fails (ghci não dá tipo)
 
-COMBINADORES S,K,I:
+COMBINATORS S,K,I:
 I = lambda "x" "x"
 K = lambda "x" lambda "y" "x"
 S = lambda "x" lambda "y" lambda "z" app app "x" "z" app "y" "z"
@@ -123,7 +123,7 @@ red w(nil, app let "s" = lambda "x" lambda "y" lambda "z" app app "x" "z" app "y
 OK
 
 
---- outros mais diferentes em que pensei
+--- other different ones
 red w("x" : forall t(1) t(1) "y" : forall t(2) t(2), app "x" "y", 1) .
 ghci> let x = 1
 ghci> let y = 2

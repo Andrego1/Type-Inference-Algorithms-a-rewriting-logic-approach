@@ -40,7 +40,7 @@ ex4 = let i = \x -> (let y = x in y ) in i i
 
 ex5 = \m -> (let y = m in (let x = y (\x y -> x) in x) ) 
 
----ex6 = let x = \z y -> z y y in x x --- falha o que é correto
+---ex6 = let x = \z y -> z y y in x x --- fails and it is suppose to
 
 ex7 = let k = \z w -> z w in \z -> z (k k)
 
