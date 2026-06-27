@@ -1,5 +1,5 @@
 fmod POLY is
-    including ST . --- verifcar se este tipo de importação é o mais correto
+    including ST .
 
     sort TypeScheme .
     subsort Type < TypeScheme .
@@ -15,7 +15,7 @@ fmod POLY is
     var S1 S2 S3 : SetOfConstraint .
     var C1 : Constraint .
 
-    op forall _ _ : TypeVar TypeScheme -> TypeScheme [format (b! o o o)] . --- quantificador universal
+    op forall _ _ : TypeVar TypeScheme -> TypeScheme [format (b! o o o)] . --- universal quantifier
 
     op let _=_ in _ : Var Term Term -> Term [format (c o g! o g! o o)] .
 
@@ -31,13 +31,7 @@ fmod POLY is
         if X1 =/= X2 .
     eq  dom(X1, X1 : TS1 E1) = X1 : TS1 .
 
-    --- este nao sei se era necessario redefenir, VERIFICAR!
-    --- Não, porque apenas aplicamos em Types e não TypeSchemes
-    ---op applyT : SetOfConstraint TypeScheme -> TypeScheme .
-    ---eq applyT(nil, TS1) = TS1 .
-    ---eq applyT(V1 = TS1 S1, TS2) = applyT(S1, tsub(TS2, TS1, V1)) .
-
-    --- teria de mudar por causa do operador abaixo --- VERSÃO POLY
+    --- POLY needed for operator below
     op tsub : TypeScheme Type TypeVar -> TypeScheme .
     --- tsub(o,t,p) -> o[t/p]
     eq tsub(V1, TYPE1, V1) = TYPE1 .
@@ -48,12 +42,12 @@ fmod POLY is
         if V1 =/= V2 .
     eq tsub(forall V1 TS1, TYPE1, V1) = forall V1 TS1 .
 
-    --- aplicar constraint a todos os elementos de Env --- VERSÃO POLY --- necessario!
+    --- POLY --- necessary!
     op applyE'' : Constraint Env Env -> Env .
     eq applyE''(C1, nil, E2) = E2 .
     eq applyE''(V1 = TYPE1, X1 : TS1 E1, E2) = applyE''(V1 = TYPE1, E1, X1 : tsub(TS1,TYPE1,V1) E2) .
 
-    --- set of type variables, para closure
+    --- set of type variables, for closure
     sort TypeVars .
     subsort TypeVar < TypeVars .
     vars TVARS1 TVARS2 : TypeVars .
@@ -61,20 +55,19 @@ fmod POLY is
     eq V1 V1 TVARS1 = V1 TVARS1 .
     op nil : -> TypeVars .
 
-    --- sort do resultado 
+
     sort WPair .
     op wpair : SetOfConstraint Type NzNat -> WPair .
 
 
-    --- algoritmo w
+    --- algorithm w
     op w : Env Term NzNat -> WPair .
     eq w(E1, X1, N1) = compute(rg(dom(X1,E1)), N1, nil) . 
-    ---    if dom(X1,E1) =/= nilA . --- antes queria ter caso nilA errorW, mas não vale a pena
     eq w(E1, app T1 T2, N1) = compute1(w(E1,T1,N1),T2,E1) .
     eq w(E1, lambda X1 T1, N1) = computeL(w(excludeE(E1,dom(X1,E1)) X1 : t(N1), T1, N1 + 1), N1) .
     eq w(E1, let X1 = T1 in T2, N1) = compute1'(w(E1,T1,N1), T2, E1, X1) .
 
-    --- auxiliares para caso 4)
+    --- auxiliaries case 4)
     op compute1' : WPair Term Env Var -> WPair .
     eq compute1'(wpair(S1,TYPE1,N1), T2, E1, X1) = compute2'(wpair(S1,TYPE1,N1), w(applyE'(S1,E1) X1 : closure(applyE'(S1,E1), TYPE1, typevars(TYPE1), nil), T2, N1 )) .
 
@@ -105,11 +98,11 @@ fmod POLY is
     ceq except(V1 TVARS1, V2 TVARS2) = V1 except(TVARS1, TVARS2) 
         if V1 =/= V2 .
 
-    --- auxiliar para caso 3)
+    --- auxiliary case 3)
     op computeL : WPair NzNat -> WPair .
     eq computeL(wpair(S1, TYPE1, N1), N2) = wpair(S1, applyT(S1,t(N2) --> TYPE1), N1) .
 
-    --- auxiliares para caso 2)
+    --- auxiliaries case 2)
     op compute1 : WPair Term Env -> WPair .
     eq compute1(wpair(S1, TYPE1, N1), T2,E1) = compute2(wpair(S1, TYPE1, N1), w(applyE'(S1,E1), T2, N1)) .
 
@@ -118,18 +111,12 @@ fmod POLY is
 
     op compute3 : WPair WPair SetOfConstraint -> WPair .
     eq compute3(wpair(S1, TYPE1, N1), wpair(S2, TYPE2, N2), S3) = wpair(S1 S2 S3, applyT(S3, t(N2)), N2 + 1) .
-    --- dúvida com a composição do S1 S2 S3, estando nesta ordem resulta como composição? 
-    --- eu acho que aplica primeiro os de S1 depois S2 e no final S3 isto é S3(S2(S1(a)))
-    --- como é suposto
-    --- funciona como esperado, o SetOfConstraint é mais como uma lista do que um conjunto, a ordem importa
-    --- DONE!
 
-    --- auxiliar para caso 1)
+    --- auxiliary case 1)
     op compute : TypeScheme NzNat SetOfConstraint -> WPair .
     eq compute(forall V1 TS1, N1, S1) = compute(TS1, N1 + 1, V1 = t(N1) S1) .
     eq compute(TYPE1, N1, S1) = wpair(nil, applyT(S1, TYPE1), N1)  . 
-    --- lembrar que applyT : SetOfConstraint Type -> Type, acho que não tem problema apenas ser Type neste caso, VERIFICAR!
-    --- DONE!
+
 
     
 endfm
