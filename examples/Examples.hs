@@ -28,7 +28,7 @@ ex3d = \x y -> x y (\z -> y z)
 
 
 --- Examples only for POLY module
---- first 5 are taken from: https://github.com/wh5a/Algorithm-W-Step-By-Step/blob/master/AlgorithmW.pdf
+--- first 5 are taken from: https://raw.githubusercontent.com/mgrabmueller/AlgorithmW/master/pdf/AlgorithmW.pdf
 
 ex1 = let i = \x -> x in i
 
@@ -51,9 +51,13 @@ ex9 = let s = \x y z -> x z (y z) in (let k = \a b -> a in (let i = \c -> c in s
 ex10 = (let s = \x y z -> x z (y z) in (let k = \a b -> a in s k )) (\x y z -> x z (y z))
 
 x :: a -> a
-x b = b
+--x :: Int -> a
+--x :: Int -> Int
+x = undefined
 
-a = let y = x x in y
+ex = x x
+
+a = let y = x in y
 
 --- Tested ONLY for POLY
 
