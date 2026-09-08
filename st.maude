@@ -100,11 +100,11 @@ fmod ST is
         if inference(T1, N1) =/= errorp .
     eq inference(lambda X1 T1, N1) = computeL(X1, inference(T1,N1)) . 
 
-    op compute1' : Pair Term Term -> Pair . 
+    op compute1' : Pair Term SetOfVars -> Pair . 
     ceq compute1'(pair(p(E1,TYPE1), N1), T2, VARS) = compute1(pair(p(E1,TYPE1), N1), inference(T2, N1 + 1), VARS) 
         if inference(T2, N1 + 1) =/= errorp .
     
-    op compute1 : Pair Pair Term -> Pair .
+    op compute1 : Pair Pair SetOfVars -> Pair .
     eq compute1(pair(p(E1,TYPE1), N1),pair(p(E2,TYPE2),N2), VARS) = compute2(unify(computeA(E1,E2,VARS,nil) TYPE1 = TYPE2 --> t(N2 + 1), nil), E1, E2, t(N2 + 1), N2 + 1) .
 
     op compute2 : SetOfConstraint Env Env Type NzNat -> Pair .
@@ -139,11 +139,11 @@ fmod ST is
         if A2 =/= A1 .
 
     --- intersection of lists of variables
-    op intersect : Term Term -> Term .
-    eq intersect(nil, T1) = nil .
-    eq intersect(T1, nil) = nil .
-    eq intersect(X1 T1, X1 T2) = X1 intersect(T1, T2) .
-    eq intersect(T1, T2) = nil [owise] . --- otherwise
+    op intersect : SetOfVars SetOfVars -> SetOfVars .
+    eq intersect(nilV, VARS) = nilV .
+    eq intersect(VARS, nilV) = nilV .
+    eq intersect(X1 VARS, X1 VARS2) = X1 intersect(VARS, VARS2) .
+    eq intersect(VARS, VARS2) = nilV [owise] . --- otherwise
 
     op rg : Assign -> Type . --- range, ex: rg("x":t(1)) -> t(1)
     eq rg(X1 : TYPE1) = TYPE1 .
@@ -158,22 +158,24 @@ fmod ST is
     eq  dom(X1, X1 : TYPE1 E1) = X1 : TYPE1 .
 
     --- lists of variables
-    op _ _ : Term Term -> Term [comm assoc id: nil prec 50] .
-    eq X1 X1 T1 = X1 T1 . --- idempotente 
-    var VARS : Term .
-    op nil : -> Term . 
+    sort SetOfVars .
+    subsort Var < SetOfVars .
+    op _ _ : SetOfVars SetOfVars -> SetOfVars [comm assoc id: nilV prec 50] .
+    ceq X1 X2 = X1 if X1 == X2 . --- idempotente 
+    vars VARS VARS2 : SetOfVars .
+    op nilV : -> SetOfVars . 
 
     --- fv in terms, ex: freeVar(lambda "x" app "y" app "x" "z") = "y" "z"
-    op freeVar : Term -> Term .
-    eq freeVar(nil) = nil .
+    op freeVar : Term -> SetOfVars .
+    ---eq freeVar(nil) = nilV .
     eq freeVar(X1) = X1 .
     eq freeVar(app T1 T2) = freeVar(T1) freeVar(T2) .
-    eq freeVar(lambda X1 T1) = exclude(freeVar(T1),X1) .
+    eq freeVar(lambda X1 T1) = exclude(freeVar(T1), X1) .
 
     --- exclude var from list
-    op exclude : Term Var -> Term .
+    op exclude : SetOfVars Var -> SetOfVars .
     --- exclude(v1 v2 v3 v4, v2) -> v1 v3 v4
-    eq exclude(nil,X2) = nil .
+    eq exclude(nilV, X2) = nilV .
     eq exclude(X1 VARS, X1) = exclude(VARS, X1) .
     ceq exclude(X1 VARS, X2) = X1 exclude(VARS, X2)
         if X1 =/= X2 .
@@ -181,13 +183,13 @@ fmod ST is
     --- my A is a constraint where types from fv(T1 T2) are equal
     --- (case 2 in Milner's type-inference algorithm) 
     --- computeA("x" : t(1) --> t(2) "y" : t(3) "q" : t(3) --> t(4), "y" : t(5) --> t(6) "x" : t(7) --> t(8),"x" "y", nil)
-    op computeA : Env Env Term SetOfConstraint -> SetOfConstraint .
-    eq computeA(E1, E2, nil, S1) = S1 .
-    ceq computeA(E1, E2, X1 T1, S1) = computeA(E1, E2, T1, rg(dom(X1,E1)) = rg(dom(X1,E2)) S1)
+    op computeA : Env Env SetOfVars SetOfConstraint -> SetOfConstraint .
+    eq computeA(E1, E2, nilV, S1) = S1 .
+    ceq computeA(E1, E2, X1 VARS, S1) = computeA(E1, E2, VARS, rg(dom(X1,E1)) = rg(dom(X1,E2)) S1)
         if dom(X1,E1) =/= nil /\ dom(X1,E2) =/= nil .
-    ceq computeA(E1, E2, X1 T1, S1) = computeA(E1, E2, T1, S1)
+    ceq computeA(E1, E2, X1 VARS, S1) = computeA(E1, E2, VARS, S1)
         if dom(X1,E1) == nil . 
-    ceq computeA(E1, E2, X1 T1, S1) = computeA(E1, E2, T1, S1)
+    ceq computeA(E1, E2, X1 VARS, S1) = computeA(E1, E2, VARS, S1)
         if dom(X1,E2) == nil . 
 
     --- apply tsub to all the types in constraint
@@ -255,7 +257,7 @@ fmod ST is
     eq unify(TYPE1 --> TYPE2 = TYPE3 --> TYPE4 S1, S2) = unify((TYPE1 = TYPE3) (TYPE2 = TYPE4) (S1), S2) .
     eq unify(TYPE1 --> TYPE2 = V1 S1, S2) = unify((V1 = TYPE1 --> TYPE2) (S1), S2) . 
     ceq unify(V1 = TYPE1 S1, S2) = unify(tsubcons(S1, TYPE1, V1), (V1 = TYPE1) tsubcons(S2, TYPE1, V1))
-        if fv(V1,TYPE1) == false . --- e x in fv(S1)
+        if fv(V1,TYPE1) == false . --- (x in fv(S1) not needed)
     ceq unify(V1 = TYPE1 S1, S2) = fail 
         if V1 =/= TYPE1 /\ fv(V1,TYPE1) == true .
 
