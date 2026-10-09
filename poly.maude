@@ -20,7 +20,7 @@ fmod POLY is
     op let _=_ in _ : Var Term Term -> Term [format (c o g! o g! o o)] .
 
 
-    op _:_ : Var TypeScheme -> Assign [format(o c! o o)] . --- type < typescheme
+    op _:_ : Var TypeScheme -> Assign [ditto] . --- type < typescheme
 
     op rg : Assign -> TypeScheme . --- range, ex: rg(x:t1) -> t1
     eq rg(X1 : TS1) = TS1 .
