@@ -15,10 +15,10 @@ fmod ST is
     vars T1 T2 T3 : Term . 
     var X1 X2 : Var .
 
-    op x(_) : NzNat -> Var . --- ex: x(1), x(2), ...  
+    op x(_) : NzNat -> Var [ctor] . --- ex: x(1), x(2), ...  
 
-    op lambda _ _ : Var Term -> Term [format (b! o o o)] . --- abstraction
-    op app _ _ : Term Term -> Term [format (c! o o o)] .   --- application
+    op lambda _ _ : Var Term -> Term [ctor format (b! o o o)] . --- abstraction
+    op app _ _ : Term Term -> Term [ctor format (c! o o o)] .   --- application
 
     ---op _ app _ : Term Term -> Term [gather (e E) format (o c! o o)] . 
     --- to use had to resolve ambiguity and precedence 
@@ -38,20 +38,20 @@ fmod ST is
     sorts Type TypeVar . 
     subsorts TypeVar < Type . 
 
-    op t(_) : NzNat -> TypeVar  . --- type, ex: t(1), t(2), ...
+    op t(_) : NzNat -> TypeVar [ctor] . --- type, ex: t(1), t(2), ...
 
     --- right associative
-    op _ --> _ : Type Type -> Type [gather (e E) format(o r! o o)] .
+    op _ --> _ : Type Type -> Type [ctor gather (e E) format(o r! o o)] .
 
     sort Env . --- gamma (context/environment)
-    op nil : -> Env . 
+    op nil : -> Env [ctor] . 
 
     sort Assign .
-    op _:_ : Var Type -> Assign [format(o g! o o)] . 
+    op _:_ : Var Type -> Assign [ctor format(o g! o o)] . 
 
     subsort Assign < Env .
 
-    op _ _ : Env Env -> Env [comm assoc id: nil prec 50] .
+    op _ _ : Env Env -> Env [ctor comm assoc id: nil prec 50] .
     eq A1 A1 E1 = A1 E1 . --- idempotencia
     --- prec mais baixo = thighter binding (ver manual de maude cap 3.9)
     --- como '_:_' é mais baixo que '_ _' (default é 41), parenthesis não são obrigatórios
@@ -70,8 +70,8 @@ fmod ST is
     op pair : PPair NzNat -> Pair . 
     op errorp : -> Pair .
 
-    op p : Env Type -> PPair [format (m! o)] .
-    op error : -> PPair . --- error from PPair 
+    op p : Env Type -> PPair [ctor format (m! o)] .
+    op error : -> PPair [ctor] . --- error from PPair 
 
 ---( --- EXAMPLES
     inference(lambda "x" app "x" "x") ok
@@ -148,7 +148,7 @@ fmod ST is
     op rg : Assign -> Type . --- range, ex: rg("x":t(1)) -> t(1)
     eq rg(X1 : TYPE1) = TYPE1 .
 
-    op nilA : -> Assign . --- needs to be nilA owise nil with nil from Env enters loop and breaks
+    op nilA : -> Assign [ctor] . --- needs to be nilA owise nil with nil from Env enters loop and breaks
 
     --- dom (domain), ex: dom("x", "y":t(1) "x":t(2)-->t(3) t(12):t(2)) = "x":t(2)-->t(3)
     op dom : Var Env -> Assign .
@@ -160,10 +160,10 @@ fmod ST is
     --- lists of variables
     sort SetOfVars .
     subsort Var < SetOfVars .
-    op _ _ : SetOfVars SetOfVars -> SetOfVars [comm assoc id: nilV prec 50] .
+    op _ _ : SetOfVars SetOfVars -> SetOfVars [ctor comm assoc id: nilV prec 50] .
     ceq X1 X2 = X1 if X1 == X2 . --- idempotente 
     vars VARS VARS2 : SetOfVars .
-    op nilV : -> SetOfVars . 
+    op nilV : -> SetOfVars [ctor] . 
 
     --- fv in terms, ex: freeVar(lambda "x" app "y" app "x" "z") = "y" "z"
     op freeVar : Term -> SetOfVars .
@@ -215,9 +215,9 @@ fmod ST is
     sorts Constraint SetOfConstraint .
     subsort Constraint < SetOfConstraint .
 
-    op _=_ : Type Type -> Constraint .
-    op nil : -> Constraint . 
-    op _ _ : SetOfConstraint SetOfConstraint -> SetOfConstraint [assoc id: nil prec 50] .
+    op _=_ : Type Type -> Constraint [ctor] .
+    op nil : -> Constraint [ctor] . 
+    op _ _ : SetOfConstraint SetOfConstraint -> SetOfConstraint [ctor assoc id: nil prec 50] .
 
     --- type susbtitution in constraints
     op tsubcons : SetOfConstraint Type TypeVar -> SetOfConstraint .
