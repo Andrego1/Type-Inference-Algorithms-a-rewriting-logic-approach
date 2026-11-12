@@ -26,6 +26,11 @@ fmod CHECK is
 
     op error : -> Type . --- in case of error
 
+    op isTypeError : Type -> Bool .
+    eq isTypeError(error) = true .
+    eq isTypeError(t(N1)) = false .
+    eq isTypeError(TYPE1 --> TYPE2) = isTypeError(TYPE1) or isTypeError(TYPE2) .
+
     --- more like TYPE RECONSTRUCTION, BIDIRECTIONAL TYPE-CHEKING
     op check : Env Term -> Type .
     eq check(E1, X1) = checkVar(dom(X1,E1)) . 
@@ -44,16 +49,22 @@ fmod CHECK is
     eq checkIf'(TYPE1, TYPE2) = error [owise] .
 
     op checkApp : Type Type -> Type .
-    eq checkApp(TYPE1 --> TYPE2, TYPE1) = TYPE2 .
+    ceq checkApp(TYPE1 --> TYPE2, TYPE1) = TYPE2 .
     eq checkApp(TYPE1, TYPE2)           = error [owise] .
 
     op checkLam : Type Type -> Type .
-    eq checkLam(TYPE1, error) = error .
-    eq checkLam(TYPE1, TYPE2) = TYPE1 --> TYPE2 .
+    ceq checkLam(TYPE1, TYPE2) = TYPE1 --> TYPE2 
+        if isTypeError(TYPE1) = false /\ isTypeError(TYPE2) = false .
+    eq checkLam(TYPE1, TYPE2) = error [owise] .
+    ---ceq checkLam(TYPE1, TYPE2) = error
+    ---    if (isTypeError(TYPE1) or isTypeError(TYPE2)) = true .
 
     op checkVar : Assign -> Type .
-    eq checkVar(nilA)       = error .
-    eq checkVar(X1 : TYPE1) = TYPE1 .
+    ---eq checkVar(nilA)       = error .
+    ceq checkVar(X1 : TYPE1) = TYPE1 
+        if isTypeError(TYPE1) = false .
+    eq checkVar(A1)       = error [owise] .
+    
 
     --- just to verify, it is not necessary
     op typeCheck : Env Term Type -> Bool . 

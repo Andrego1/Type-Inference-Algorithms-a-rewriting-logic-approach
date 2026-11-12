@@ -49,6 +49,10 @@ fmod SYSTEMF is
     eq check(E1, lambdaT TV1 T1) = forall TV1 check(E1 TV1, T1) . 
     eq check(E1, app T1 TYPE1) = checkApp2(check(E1, T1), TYPE1) .
 
+    ---------------------------------------------------------
+    --- CHECK AGAIN, SINCE I ALTER THE ONE IN check.maude ---
+    ---------------------------------------------------------
+
     op checkApp2 : Type Type -> Type .
     eq checkApp2(forall TV1 TYPE1, TYPE2) = tsub(TYPE1, TYPE2, TV1) .
     eq checkApp2(TYPE1, TYPE2)            = error [owise] .

@@ -186,11 +186,11 @@ fmod ST is
     op computeA : Env Env SetOfVars SetOfConstraint -> SetOfConstraint .
     eq computeA(E1, E2, nilV, S1) = S1 .
     ceq computeA(E1, E2, X1 VARS, S1) = computeA(E1, E2, VARS, rg(dom(X1,E1)) = rg(dom(X1,E2)) S1)
-        if dom(X1,E1) =/= nil /\ dom(X1,E2) =/= nil .
+        if dom(X1,E1) =/= nilA /\ dom(X1,E2) =/= nilA .
     ceq computeA(E1, E2, X1 VARS, S1) = computeA(E1, E2, VARS, S1)
-        if dom(X1,E1) == nil . 
+        if dom(X1,E1) == nilA . 
     ceq computeA(E1, E2, X1 VARS, S1) = computeA(E1, E2, VARS, S1)
-        if dom(X1,E2) == nil . 
+        if dom(X1,E2) == nilA . 
 
     --- apply tsub to all the types in constraint
     op applyT : SetOfConstraint Type -> Type .
